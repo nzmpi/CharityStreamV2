@@ -308,7 +308,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
         fee = _newFee;
     }
 
-    function withdrawFee() external onlyOwner() {
+    function withdrawFee() external payable onlyOwner() {
         uint256 feeAmount_ = feeAmount;
         if (0 == feeAmount_) revert NoWithdraw();
         delete feeAmount;
@@ -317,12 +317,12 @@ contract CharityStreamV2 is ICharityStreamV2 {
         emit withdrawEvent(msg.sender, feeAmount_);
     }
 
-    function transferOwnership(address _newOwner) external onlyOwner() {
+    function transferOwnership(address _newOwner) external payable onlyOwner() {
         pendingOwner = _newOwner;
         emit transferOwnershipEvent(msg.sender, _newOwner);
     }
 
-    function acceptOwnership() external {
+    function acceptOwnership() external payable {
         if (msg.sender != pendingOwner) revert NotOwner();
         owner = msg.sender;
         emit acceptOwnershipEvent(msg.sender);
@@ -340,30 +340,42 @@ contract CharityStreamV2 is ICharityStreamV2 {
         return idToCampaign[_idCampaign];
     }
 
-    /*function getProposition(
+    function getProposition(
         uint256 _idCampaign, 
         uint256 _idProposition
-    ) external view returns (PropositionShort memory PS) {
-        PS.status = idToProposition[_idCampaign][_idProposition].status;
-        PS.paymentDuration = idToProposition[_idCampaign][_idProposition].paymentDuration;
-        PS.voteEndTime = idToProposition[_idCampaign][_idProposition].voteEndTime;
-        PS.numberOfVoters = idToProposition[_idCampaign][_idProposition].numberOfVoters;
-        PS.amount = idToProposition[_idCampaign][_idProposition].amount;
-        PS.ayes = idToProposition[_idCampaign][_idProposition].ayes;
-        PS.nays = idToProposition[_idCampaign][_idProposition].nays;
-        PS.description = idToProposition[_idCampaign][_idProposition].description;        
-    }*/
+    ) external view returns (
+        Status,
+        uint32,
+        uint32,
+        uint32,
+        uint128,
+        uint128,
+        uint128,
+        string memory
+    ) {
+        Proposition storage proposition = idToProposition[_idCampaign][_idProposition];
+        return (
+            proposition.status,
+            proposition.paymentDuration,
+            proposition.voteEndTime,
+            proposition.numberOfVoters,
+            proposition.amount,
+            proposition.ayes,
+            proposition.nays,
+            proposition.description
+        );      
+    }
 
     function getStream(uint256 _idStream) external view returns (Stream memory) {
-        return streams[_idStream];
+        return streams[_idStream-1];
     }
 
     function sqrt(uint256 x) internal pure returns (uint256 y) {
-        uint256 z = (x + 1)/2;
+        uint256 z = (x + 1)>>1;
         y = x;
         while (z < y) {
             y = z;
-            z = (x/z + z)/2;
+            z = (x/z + z)>>1;
         }
     }    
 
