@@ -9,13 +9,13 @@ export const AdminInteraction = () => {
   const [idCampaign, setIdCampaign] = useState<BigNumber>(BigNumber.from(0));
 
   const { writeAsync: writeAsyncT, isLoading: isLoadingT} = useScaffoldContractWrite({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "transferOwnership",
     args: [newOwner],
   });
 
   const { writeAsync: writeAsyncS, isLoading: isLoadingS} = useScaffoldContractWrite({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "stopAndRefundCampaign",
     args: [idCampaign],
   });

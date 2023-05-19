@@ -6,27 +6,27 @@ import { Address } from "~~/components/scaffold-eth";
 export const AdminData = () => {
 
   const { data: idCampaign} = useScaffoldContractRead({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "idCampaign",
   });
 
   const { data: numStreams} = useScaffoldContractRead({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "getNumberOfStreams",
   });
 
   const { data: Fee} = useScaffoldContractRead({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "fee",
   });  
 
   const { data: Owner} = useScaffoldContractRead({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "owner",
   });
 
   const { writeAsync: writeAsyncW, isLoading: isLoadingW } = useScaffoldContractWrite({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "withdrawFee",
   });
 

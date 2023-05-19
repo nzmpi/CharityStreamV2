@@ -1,12 +1,12 @@
 import { ethers, BigNumber } from "ethers";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { 
   useScaffoldContractRead, 
   useScaffoldEventSubscriber 
 } from "~~/hooks/scaffold-eth";
 import { Address } from "~~/components/scaffold-eth";
 
-export const HomeInfo = () => { 
+const HomeInfo = () => { 
   const [creator, setCreator] = useState("");
   const [creatorProposition, setCreatorProposition] = useState("");
   const [idCampaign, setIdCampaign] = useState<BigNumber>(BigNumber.from(0)); 
@@ -28,8 +28,12 @@ export const HomeInfo = () => {
   const [campaignStatus, setCampaignStatus] = useState("");
   const [propositionStatus, setPropositionStatus] = useState("");
 
+  const [latestCampaign, setLatestCampaign] = useState("0");
+  const [latestProposition, setLatestProposition] = useState<string[]>(["0","0"]);
+  const BIG_ONE = BigNumber.from(1);
+
   useScaffoldEventSubscriber({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     eventName: "campaignCreatedEvent",
     listener: (creator, idCampaign, endTime, amount, name) => {
       setCreator(creator);
@@ -41,7 +45,7 @@ export const HomeInfo = () => {
   });
 
   useScaffoldEventSubscriber({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     eventName: "newPropositionEvent",
     listener: (
       creatorProposition, 
@@ -61,7 +65,10 @@ export const HomeInfo = () => {
     },
   });
 
-  const getEndTime = (time: number) => {
+  const getEndTime = (time: number) : string => {
+    if (time === -1) {
+      return "-";
+    }
     var a = new Date(time * 1000);
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var year = a.getFullYear();
@@ -71,7 +78,7 @@ export const HomeInfo = () => {
     var min = a.getMinutes() < 10 ? '0' + a.getMinutes() : a.getMinutes();
     var sec = a.getSeconds() < 10 ? '0' + a.getSeconds() : a.getSeconds();
     var formattedTime = hour + ':' + min + ':' + sec + ' ' + date + ' ' + month + ' ' + year ;
-    setEndTime(formattedTime);
+    return formattedTime;
   };
 
   const getEndTimeCheck = (time: number) => {
@@ -87,7 +94,10 @@ export const HomeInfo = () => {
     setEndTimeCheck(formattedTime);
   };
 
-  const getPaymentDuration = (time: number) => {
+  const getPaymentDuration = (time: number) : string => {
+    if (time === -1) {
+      return "-";
+    }
     var months = Math.floor(time/2592000);
     time %= 2592000;
     var days = Math.floor(time/86400);
@@ -108,7 +118,7 @@ export const HomeInfo = () => {
     } else {
       formattedTime = secs + ' seconds';
     }
-    setPaymentDuration(formattedTime);
+    return formattedTime;
   };
 
   const getPaymentDurationCheck = (time: number) => {
@@ -162,102 +172,142 @@ export const HomeInfo = () => {
   };
 
   const { data: Campaign } = useScaffoldContractRead({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "getCampaign",
     args: [idCampaignCheck],
   });
 
   const { data: Proposition } = useScaffoldContractRead({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "getProposition",
     args: [idCampaignPropositionCheck, idPropositionCheck],
   });
 
+  const { data: latestIdCampaign} = useScaffoldContractRead({
+    contractName: "CharityStreamV2",
+    functionName: "idCampaign",
+  });
+
+  const { data: latestCampaignData} = useScaffoldContractRead({
+    contractName: "CharityStreamV2",
+    functionName: "getCampaign",
+    args: [BigNumber.from(latestCampaign)],
+  });
+
+  const { data: latestIdProposition} = useScaffoldContractRead({
+    contractName: "CharityStreamV2",
+    functionName: "getLatestProposition",
+  });
+
+  const { data: latestPropositionData} = useScaffoldContractRead({
+    contractName: "CharityStreamV2",
+    functionName: "getProposition",
+    args: [
+      BigNumber.from(latestProposition[0]),
+      BigNumber.from(latestProposition[1])
+    ],
+  });
+
+  useEffect(() => {
+    if (latestIdCampaign === undefined) return;
+    setLatestCampaign(latestIdCampaign.sub(BIG_ONE).toString());         
+  }, [latestIdCampaign]);
+
+  useEffect(() => {
+    if (latestIdProposition === undefined) return;
+    const lP = [];
+    lP.push(latestIdProposition.idCampaign.toString());
+    lP.push(latestIdProposition.idProposition.toString());
+    setLatestProposition(lP);         
+  }, [latestIdProposition]);
+
   return (    
-      <div className="flex flex-col items-center mx-5 sm:mx-10 2xl:mx-20">
+      <div className="flex items-center flex-col flex-grow">
 
-        <div className={`mt-10 px-20 flex gap-2 max-w-2xl`}>
-        <div className="flex border-primary border-2 rounded-3xl shadow-lg px-7 py-5 ">
+        <div className={"mx-auto mt-10"}>
+        <form className="md:w-[350px] w-[350px] lg:w-[350px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
-          <span className="text-2xl sm:text-3xl text-black">Latest Campaign </span>
-          <div className="p-2 py-1"> </div>
+          <span className="text-3xl text-black">Latest Campaign</span>
 
+          <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> ID: </span>
-          <span className="p-2 text-lg text-right min-w-[2rem]"> 
-          {idCampaign?.toString() || "0"}
+          <span className="text-lg text-right min-w-[2rem]"> 
+          {latestCampaign === "0" ? "-" : latestCampaign}
           </span>
-          <div className="p-2 py-1"> </div>
 
+          <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Name: </span>
-          <span className="p-2 text-lg text-right min-w-[2rem]"> 
-          {name?.toString() || "No name"}
+          <span className="text-lg text-right min-w-[2rem]"> 
+          {latestCampaignData?.name || "-"} 
           </span>
-          <div className="p-2 py-1"> </div>
 
+          <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Creator: </span>
-          <Address address={creator} />
-          <div className="p-2 py-1"> </div>
+          <Address address={latestCampaignData?.owner} />
 
+          <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Ends: </span>
-          <span className="p-2 text-lg text-right min-w-[2rem]"> 
-          { endTime?.toString() || "0"}
+          <span className="text-lg text-right min-w-[2rem]"> 
+          { 
+          getEndTime(latestCampaignData?.endTime || -1)
+          }
           </span>
+
           <div className="p-2 py-1"> </div>
-
           <span className="p-2 text-lg font-bold"> Amount: </span>
-          <span className="p-2 text-lg text-right min-w-[2rem]"> 
-            {amount ? ethers.utils.formatEther(amount?.toString()) : "0.0"} ETH
+          <span className="text-lg text-right min-w-[2rem]"> 
+            {latestCampaignData?.amountGoal ? ethers.utils.formatEther(latestCampaignData?.amountGoal.toString()) + " ETH" : "-"}
           </span>
         </div>
-        </div>
+        </form>
         </div>
 
-        <div className={`mt-10 px-20 flex gap-2 max-w-2xl`}>
-        <div className="flex border-primary border-2 rounded-3xl shadow-lg px-7 py-5 ">
+        <div className={"mx-auto mt-10"}>
+        <form className="md:w-[350px] w-[350px] lg:w-[350px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
-          <span className="text-2xl sm:text-3xl text-black">Latest Proposition </span>
+          <span className="text-3xl text-black">Latest Proposition</span>
+    
           <div className="p-2 py-1"> </div>
-
           <span className="p-2 text-lg font-bold"> ID: </span>
-          <span className="p-2 text-lg text-right min-w-[2rem]"> 
-          {idProposition?.toString() || "0"}
+          <span className="text-lg text-right min-w-[2rem]"> 
+          {latestProposition[1] === "0" ? "-" : latestProposition[1]}
           </span>
-          <div className="p-2 py-1"> </div>
 
+          <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Campaign's ID: </span>
-          <span className="p-2 text-lg text-right min-w-[2rem]"> 
-          {idCampaignProposition?.toString() || "0"}
+          <span className="text-lg text-right min-w-[2rem]"> 
+          {latestProposition[0] === "0" ? "-" : latestProposition[0]} 
           </span>
-          <div className="p-2 py-1"> </div>
 
+          <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Description: </span>
-          <span className="p-2 text-lg text-right min-w-[2rem]"> 
-          {description?.toString() || "No description"}
+          <span className="text-lg text-right min-w-[2rem]"> 
+          {latestPropositionData?.description || "-"} 
           </span>
-          <div className="p-2 py-1"> </div>
 
-          <span className="p-2 text-lg font-bold"> Creator: </span>
-          <Address address={creatorProposition} />
           <div className="p-2 py-1"> </div>
-
           <span className="p-2 text-lg font-bold"> Voting Ends: </span>
-          <span className="p-2 text-lg text-right min-w-[2rem]"> 
-          {voteDuration?.toString() || "0"}
+          <span className="text-lg text-right min-w-[2rem]"> 
+          { 
+          getEndTime(latestPropositionData?.voteEndTime || -1)
+          }
           </span>
-          <div className="p-2 py-1"> </div>
 
+          <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Amount: </span>
-          <span className="p-2 text-lg text-right min-w-[2rem]"> 
-            {amountProposition ? ethers.utils.formatEther(amountProposition ?.toString()) : "0.0"} ETH
+          <span className="text-lg text-right min-w-[2rem]"> 
+            {latestPropositionData?.amount ? ethers.utils.formatEther(latestPropositionData?.amount.toString()) + " ETH" : "-"}
           </span>
-          <div className="p-2 py-1"> </div>
 
+          <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Payment Duration: </span>
-          <span className="p-2 text-lg text-right min-w-[2rem]"> 
-          {paymentDuration?.toString() || "0"}
+          <span className="text-lg text-right min-w-[2rem]"> 
+          { 
+          getPaymentDuration(latestPropositionData?.paymentDuration || -1)
+          }
           </span>
         </div>
-        </div>
+        </form>
         </div>
 
         <div className={`mt-10 px-20 flex gap-2 max-w-2xl`}>
@@ -329,7 +379,7 @@ export const HomeInfo = () => {
 
           <span className="p-2 text-lg font-bold"> Quorum: </span>
           <span className="p-2 text-lg text-right min-w-[2rem]"> 
-          {Campaign?.quorum || "0"}
+          {(Campaign?.quorum)?.toString() || "0"}
           </span>
         </div>
         </div>
@@ -441,4 +491,4 @@ export const HomeInfo = () => {
   );
 };
 
-/**/
+export default HomeInfo;

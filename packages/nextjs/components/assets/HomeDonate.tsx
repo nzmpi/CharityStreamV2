@@ -5,7 +5,7 @@ import { useScaffoldContractWrite, useScaffoldContractRead } from "~~/hooks/scaf
 import { EtherInput } from "~~/components/scaffold-eth/Input/EtherInput";
 import { useAccount } from "wagmi";
 
-export const HomeDonate = () => {
+const HomeDonate = () => {
   const [decision, setDecision] = useState(false);
   const [idCampaign, setIdCampaign] = useState<BigNumber>(BigNumber.from(0));
   const [idProposition, setIdProposition] = useState<BigNumber>(BigNumber.from(0));
@@ -13,25 +13,25 @@ export const HomeDonate = () => {
   const { address: signer } = useAccount();
 
   const { writeAsync: writeAsyncD, isLoading: isLoadingD} = useScaffoldContractWrite({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "donate",
     args: [idCampaign],
     value: amountString,
   });
 
   const { writeAsync: writeAsyncR, isLoading: isLoadingR} = useScaffoldContractWrite({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "withdrawRefunds",
   });
 
   const { writeAsync: writeAsyncV, isLoading: isLoadingV} = useScaffoldContractWrite({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "vote",
     args: [idCampaign, idProposition, decision],
   });
 
   const { data: Refunds} = useScaffoldContractRead({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "getRefunds",
     args: [signer],
   });
@@ -204,3 +204,5 @@ export const HomeDonate = () => {
     </div>      
   );
 };
+
+export default HomeDonate;

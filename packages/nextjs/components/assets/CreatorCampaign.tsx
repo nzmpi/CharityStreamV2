@@ -67,25 +67,25 @@ export const CreatorCampaign = () => {
   };
 
   const { writeAsync: writeAsyncC, isLoading: isLoadingC} = useScaffoldContractWrite({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "createCampaign",
     args: [nameOfCampaign, amount, duration],
   });
 
   const { writeAsync: writeAsyncF, isLoading: isLoadingF} = useScaffoldContractWrite({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "finishCampaign",
     args: [idCampaign],
   });
 
   const { writeAsync: writeAsyncS, isLoading: isLoadingS} = useScaffoldContractWrite({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "stopAndRefundCampaign",
     args: [idCampaign],
   });
 
   const { data: Stream } = useScaffoldContractRead({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "getStream",
     args: [idStreamCheck],
   });
@@ -294,7 +294,7 @@ export const CreatorCampaign = () => {
 
           <span className="p-2 text-lg font-bold"> Withdrawn: </span>
           <span className="p-2 text-lg text-right min-w-[2rem]"> 
-            {Stream?.withdrawn ? ethers.utils.formatEther(Stream?.withdrawn.toString()) : "0.0"} ETH
+            {Stream?.leftAmount ? ethers.utils.formatEther(Stream?.leftAmount.toString()) : "0.0"} ETH
           </span>
         </div>
         </div>

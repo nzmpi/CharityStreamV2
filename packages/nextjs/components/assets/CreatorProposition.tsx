@@ -73,19 +73,19 @@ export const CreatorProposition = () => {
   };
 
   const { writeAsync: writeAsyncP, isLoading: isLoadingP} = useScaffoldContractWrite({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "newProposition",
     args: [idCampaign, description, amount, paymentDuration, voteDuration],
   });
 
   const { writeAsync: writeAsyncE, isLoading: isLoadingE} = useScaffoldContractWrite({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "endProposition",
     args: [idCampaign, idProposition],
   });
 
   const { writeAsync: writeAsyncW, isLoading: isLoadingW } = useScaffoldContractWrite({
-    contractName: "CharityStream",
+    contractName: "CharityStreamV2",
     functionName: "withdrawFunds",
     args: [idStream],
   });
@@ -93,7 +93,7 @@ export const CreatorProposition = () => {
   return (    
     <div className="flex flex-col items-left mx-5 sm:mx-10 2xl:mx-20">  
 
-        <div className={`mt-2 flex gap-2 max-w-2xl`}>
+        <div className={"mt-2 flex gap-2 max-w-2xl"}>
         <div className="flex flex-col mt-8 px-7 py-8 bg-base-200 opacity-80 rounded-3xl shadow-lg border-2 border-primary">
           <span className="text-2xl sm:text-4xl text-black">Create Proposition </span>
           
@@ -216,7 +216,7 @@ export const CreatorProposition = () => {
         </div>
         </div>
 
-        <div className={`mt-2 flex gap-2 max-w-2xl`}>
+        <div className={"mt-2 flex gap-2 max-w-2xl"}>
           <div className="flex flex-col mt-8 px-7 py-8 bg-base-200 opacity-80 rounded-3xl shadow-lg border-2 border-primary">
             <span className="text-2xl sm:text-4xl text-black">End Proposition </span>
 

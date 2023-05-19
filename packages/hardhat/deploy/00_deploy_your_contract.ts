@@ -7,7 +7,7 @@ import { DeployFunction } from "hardhat-deploy/types";
  *
  * @param hre HardhatRuntimeEnvironment object.
  */
-const deployCharityStream: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deployCharityStreamV2: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   /*
     On localhost, the deployer account is the one that comes with Hardhat, which is already funded.
 
@@ -21,7 +21,7 @@ const deployCharityStream: DeployFunction = async function (hre: HardhatRuntimeE
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  await deploy("CharityStream", {
+  await deploy("CharityStreamV2", {
     from: deployer,
     // Contract constructor arguments
     //args: [deployer],
@@ -35,8 +35,8 @@ const deployCharityStream: DeployFunction = async function (hre: HardhatRuntimeE
   // const yourContract = await hre.ethers.getContract("YourContract", deployer);
 };
 
-export default deployCharityStream;
+export default deployCharityStreamV2;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
 // e.g. yarn deploy --tags YourContract
-deployCharityStream.tags = ["CharityStream"];
+deployCharityStreamV2.tags = ["CharityStreamV2"];
