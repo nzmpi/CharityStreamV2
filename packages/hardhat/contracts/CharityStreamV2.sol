@@ -181,12 +181,6 @@ contract CharityStreamV2 is ICharityStreamV2 {
             nays: 0,
             description: _description
         }));
-        /*Proposition storage proposition = idToProposition[_idCampaign][idProposition_ - 1];
-        proposition.status = Status.Active;
-        proposition.paymentDuration = _paymentDuration;
-        proposition.voteEndTime = voteEndTime;
-        proposition.amount = _amount;
-        proposition.description = _description;*/
         // already checked
         unchecked {campaign.amountLeft = campaign.amountLeft - _amount;}
         latestProposition = LatestProposition(uint128(_idCampaign),uint128(idProposition_));
@@ -258,6 +252,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
         streams.push(Stream(
             uint32(block.timestamp),
             uint32(block.timestamp) + _paymentDuration,
+            uint32(block.timestamp),
             msg.sender,
             flow,
             _amount
@@ -283,12 +278,13 @@ contract CharityStreamV2 is ICharityStreamV2 {
 
     function getPayment(Stream storage _stream) internal returns (uint128){
         uint256 delta;
-        if (block.timestamp < _stream.endTime) {
-            delta = block.timestamp - _stream.startTime;
-            _stream.startTime = uint32(block.timestamp);
+        uint32 endTime = _stream.endTime;
+        if (block.timestamp < endTime) {
+            delta = block.timestamp - _stream.lastWithdrawTime;
+            _stream.lastWithdrawTime = uint32(block.timestamp);
         } else {
-            delta = _stream.endTime - _stream.startTime;
-            _stream.startTime = _stream.endTime;
+            delta = endTime - _stream.lastWithdrawTime;
+            _stream.lastWithdrawTime = endTime;
         }
 
         return uint128(delta*_stream.flow);

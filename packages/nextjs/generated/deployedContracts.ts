@@ -5,7 +5,7 @@ const contracts = {
       chainId: "31337",
       contracts: {
         CharityStreamV2: {
-          address: "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE",
+          address: "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
           abi: [
             {
               inputs: [],
@@ -828,6 +828,11 @@ const contracts = {
                     {
                       internalType: "uint32",
                       name: "endTime",
+                      type: "uint32",
+                    },
+                    {
+                      internalType: "uint32",
+                      name: "lastWithdrawTime",
                       type: "uint32",
                     },
                     {

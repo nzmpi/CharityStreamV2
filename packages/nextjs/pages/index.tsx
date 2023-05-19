@@ -1,13 +1,23 @@
 import Head from "next/head";
 import type { NextPage } from "next";
-import MainUI from "~~/components/assets/MainUI";
 import { useEffect, useState } from "react";
+import HomeLatestInfo from "~~/components/assets/HomeLatestInfo";
+import HomeDonate from "~~/components/assets/HomeDonate";
+import HomeGetInfo from "~~/components/assets/HomeGetInfo";
+import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
-  const [activeItem, setActiveItem] = useState("Latest Info");
+  const [activeItem, setActiveItem] = useState("Get Info");
 
   function handleActiveItem(itemId: string) {
     setActiveItem(itemId);
+  }
+
+  let contractAddress;
+  let contractAbi;
+  const { data: deployedContractData } = useDeployedContractInfo("CharityStreamV2");
+  if (deployedContractData) {
+    ({ address: contractAddress, abi: contractAbi } = deployedContractData);
   }
 
   return (
@@ -33,9 +43,19 @@ const Home: NextPage = () => {
         </li>
       </ul>
 
-      <MainUI 
-        splitItem={activeItem}
-      />
+      {activeItem === "Latest Info" && (
+        <HomeLatestInfo
+        contractAddress={contractAddress}
+        />
+      )}
+
+      {activeItem === "Get Info" && (
+        <HomeGetInfo/>
+      )}
+
+      {activeItem === "Donate" && (
+        <HomeDonate/>
+      )}
 
     </div>  
     </>

@@ -75,6 +75,7 @@ interface ICharityStreamV2 is IErrors, IEvents {
   struct Stream {
     uint32 startTime;
     uint32 endTime;
+    uint32 lastWithdrawTime;
     address receiver;
     uint128 flow;
     uint128 leftAmount;
