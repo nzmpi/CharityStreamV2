@@ -12,45 +12,17 @@ contract CharityStreamV2 is ICharityStreamV2 {
     uint16 public fee;
     address public owner;
     address private pendingOwner;
-    uint256 feeAmount;
+    uint128 feeAmount;
     // start from 1
-    uint256 public idCampaign = 1;
+    uint128 public idCampaign = 1;
+    uint256 public streamedAmount;
 
-    enum Status {NotActive, Active, Finished, Refunded}
+    Campaign[] campaigns;
+    Stream[] streams;
+    // the first element is idCampaign,
+    // the second element is idProposition
+    LatestProposition latestProposition;
 
-    struct Campaign {
-        Status status;
-        uint32 endTime; 
-        uint64 quorum;
-        address owner;
-        uint128 amountGoal;
-        uint128 amountReceived;
-        uint128 amountLeft;
-        uint128 idProposition;
-        string name;
-    }
-
-    struct Proposition {
-        Status status;
-        uint32 paymentDuration;
-        uint32 voteEndTime;
-        uint32 numberOfVoters;
-        uint128 amount;
-        uint128 ayes;
-        uint128 nays;
-        string description;
-        mapping (address => bool) hasVoted;
-    }
-
-    struct Stream {
-        uint32 startTime;
-        uint32 endTime;
-        address receiver;
-        uint128 flow;
-        uint128 leftAmount;
-    }
-
-    mapping (uint256 => Campaign) idToCampaign;
     // Campaign's backers
     mapping (uint256 => address[]) idToBackers;
     // backer => idCampaign => amount
@@ -59,22 +31,31 @@ contract CharityStreamV2 is ICharityStreamV2 {
     // backer => all supported campaigns
     mapping (address => uint256[]) backedCampaigns;
     // idCampaign => propositions
-    mapping (uint256 => Proposition[]) idToProposition;
-
-    Stream[] streams; 
+    mapping (uint256 => Proposition[]) public idToProposition;
+    // backer => idCampaign => idProposition => bool 
+    mapping (address => mapping(uint256 => mapping(uint256 => bool))) hasVoted;
 
     constructor() payable {
         owner = 0xc8ED1BFD9c71dC422BEA203BD8d869b55Bf252dd;
     }
 
     modifier onlyCampaignOwner(uint256 _idCampaign) {
-        if (msg.sender != idToCampaign[_idCampaign].owner) revert NotOwner();
+        if (msg.sender != campaigns[_idCampaign-1].owner) revert NotOwner();
         _;
     }
 
     modifier onlyOwner() {
         if (msg.sender != owner) revert NotOwner();
         _;
+    }
+
+    function checking() external view returns (address, uint256, uint32, string memory) {
+        return (
+            address(this),
+            42,
+            69,
+            "take it boi"
+        );
     }
 
     function createCampaign(
@@ -86,7 +67,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
         if (0 == _amount) revert AmountIsZero();
 
         uint32 endTime = uint32(block.timestamp + _duration);
-        idToCampaign[idCampaign] = Campaign(
+        campaigns.push(Campaign(
             Status.Active,
             endTime,
             0,
@@ -96,7 +77,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
             0,
             1,
             _name
-        );
+        ));
 
         emit campaignCreatedEvent(
             msg.sender, 
@@ -109,7 +90,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
     }
 
     function donate(uint256 _idCampaign) external payable {
-        Campaign storage campaign = idToCampaign[_idCampaign];
+        Campaign storage campaign = campaigns[_idCampaign-1];
         if (campaign.status != Status.Active) revert CampaignIsNotActive();
         if (campaign.endTime < block.timestamp) revert CampaignEnded();
 
@@ -125,7 +106,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
     }
 
     function stopAndRefundCampaign(uint256 _idCampaign) external {
-        Campaign storage campaign = idToCampaign[_idCampaign];
+        Campaign storage campaign = campaigns[_idCampaign-1];
         if (msg.sender != campaign.owner && msg.sender != owner) revert NotOwner();
         if (Status.Active != campaign.status) revert CampaignIsNotActive();
         campaign.status = Status.Refunded;
@@ -154,7 +135,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
     }
 
     function finishCampaign(uint256 _idCampaign) external onlyCampaignOwner(_idCampaign) {
-        Campaign storage campaign = idToCampaign[_idCampaign];
+        Campaign storage campaign = campaigns[_idCampaign-1];
         if (Status.Active != campaign.status) revert CampaignIsNotActive();
         if (block.timestamp <= campaign.endTime) revert CampaignIsActive();
         campaign.status = Status.Finished;
@@ -163,7 +144,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
         uint256 fee_ = fee;
         if (0 != fee_) {
             fee_ = amount*fee_/1000;
-            feeAmount = feeAmount + fee_;
+            feeAmount = uint128(feeAmount + fee_);
             amount -= fee_;
             campaign.amountReceived = uint128(amount);
         }
@@ -181,7 +162,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
         uint32 _paymentDuration,
         uint32 _voteDuration
     ) external onlyCampaignOwner(_idCampaign) {
-        Campaign storage campaign = idToCampaign[_idCampaign];
+        Campaign storage campaign = campaigns[_idCampaign-1];
         if (Status.Finished != campaign.status) revert CampaignIsNotFinished();
         if (_amount > campaign.amountLeft) revert NotEnoughFunds();
         if (0 == _paymentDuration) revert DurationIsZero();
@@ -190,16 +171,26 @@ contract CharityStreamV2 is ICharityStreamV2 {
         uint256 idProposition_ = campaign.idProposition;
         uint32 voteEndTime = uint32(block.timestamp) + _voteDuration;
 
-        idToProposition[_idCampaign].push();
-        Proposition storage proposition = idToProposition[_idCampaign][idProposition_ - 1];
+        idToProposition[_idCampaign].push(Proposition({
+            status: Status.Active,
+            paymentDuration: _paymentDuration,
+            voteEndTime: voteEndTime,
+            numberOfVoters: 0,
+            amount: _amount,
+            ayes: 0,
+            nays: 0,
+            description: _description
+        }));
+        /*Proposition storage proposition = idToProposition[_idCampaign][idProposition_ - 1];
         proposition.status = Status.Active;
         proposition.paymentDuration = _paymentDuration;
         proposition.voteEndTime = voteEndTime;
         proposition.amount = _amount;
-        proposition.description = _description;
-        ++campaign.idProposition;
+        proposition.description = _description;*/
         // already checked
         unchecked {campaign.amountLeft = campaign.amountLeft - _amount;}
+        latestProposition = LatestProposition(uint128(_idCampaign),uint128(idProposition_));
+        ++campaign.idProposition;
 
         emit newPropositionEvent(
             msg.sender, 
@@ -220,10 +211,10 @@ contract CharityStreamV2 is ICharityStreamV2 {
         uint256 donation = donations[msg.sender][_idCampaign];
         if (0 == donation) revert NotBacker();
 
-        Proposition storage proposition = idToProposition[_idCampaign][_idProposition];
+        Proposition storage proposition = idToProposition[_idCampaign][_idProposition-1];
         if (block.timestamp > proposition.voteEndTime) revert VotingEnded();
-        if (true == proposition.hasVoted[msg.sender]) revert AlreadyVoted();
-        proposition.hasVoted[msg.sender] = true;
+        if (true == hasVoted[msg.sender][_idCampaign][_idProposition]) revert AlreadyVoted();
+        hasVoted[msg.sender][_idCampaign][_idProposition] = true;
         ++proposition.numberOfVoters;
 
         uint128 votePower = uint128(sqrt(donation));
@@ -238,12 +229,12 @@ contract CharityStreamV2 is ICharityStreamV2 {
      * ayes are (50% + 1), create a stream
      */
     function endProposition(uint256 _idCampaign, uint256 _idProposition) external onlyCampaignOwner(_idCampaign) {
-        Proposition storage proposition = idToProposition[_idCampaign][_idProposition];
+        Proposition storage proposition = idToProposition[_idCampaign][_idProposition-1];
         if (Status.Active != proposition.status) revert PropositionIsNotActive();
         if (block.timestamp < proposition.voteEndTime) revert VotingIsActive();
         proposition.status = Status.Finished;
 
-        Campaign storage campaign = idToCampaign[_idCampaign];
+        Campaign storage campaign = campaigns[_idCampaign-1];
         if (proposition.numberOfVoters < campaign.quorum) { 
             campaign.amountLeft = campaign.amountLeft + proposition.amount;
             emit quorumIsNotMetEvent(_idCampaign, _idProposition);
@@ -283,6 +274,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
             unchecked{stream.leftAmount -= payment;}
             (bool sent,) = receiver.call{value: payment}("");
             if (!sent) revert NoWithdraw();
+            streamedAmount = streamedAmount + payment;
             emit fundsWithrawnEvent(msg.sender, idStream, payment);
         } else {
             revert NotEnoughFunds();
@@ -325,6 +317,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
     function acceptOwnership() external payable {
         if (msg.sender != pendingOwner) revert NotOwner();
         owner = msg.sender;
+        delete pendingOwner;
         emit acceptOwnershipEvent(msg.sender);
     }
 
@@ -337,33 +330,22 @@ contract CharityStreamV2 is ICharityStreamV2 {
     }
 
     function getCampaign(uint256 _idCampaign) external view returns (Campaign memory) {
-        return idToCampaign[_idCampaign];
+        return campaigns[_idCampaign-1];
+    }
+
+    function getBackedCampaigns(address _backer) external view returns (uint256[] memory) {
+        return backedCampaigns[_backer];
     }
 
     function getProposition(
         uint256 _idCampaign, 
         uint256 _idProposition
-    ) external view returns (
-        Status,
-        uint32,
-        uint32,
-        uint32,
-        uint128,
-        uint128,
-        uint128,
-        string memory
-    ) {
-        Proposition storage proposition = idToProposition[_idCampaign][_idProposition];
-        return (
-            proposition.status,
-            proposition.paymentDuration,
-            proposition.voteEndTime,
-            proposition.numberOfVoters,
-            proposition.amount,
-            proposition.ayes,
-            proposition.nays,
-            proposition.description
-        );      
+    ) external view returns (Proposition memory) {
+        return idToProposition[_idCampaign][_idProposition-1];
+    }
+
+    function getLatestProposition() external view returns (LatestProposition memory) {
+        return latestProposition;
     }
 
     function getStream(uint256 _idStream) external view returns (Stream memory) {
