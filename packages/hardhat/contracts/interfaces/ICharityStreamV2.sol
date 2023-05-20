@@ -28,7 +28,7 @@ interface ICharityStreamV2 is IErrors, IEvents {
   ) external;
   function endProposition(uint256 _idCampaign, uint256 _idProposition) external;
   function withdrawFunds(uint256 idStream) external;
-  function setFee(uint16 _newFee) external payable;
+  function setFee(uint256 _newFee) external payable;
   function withdrawFee() external payable;
   function transferOwnership(address _newOwner) external payable;
   function acceptOwnership() external payable;

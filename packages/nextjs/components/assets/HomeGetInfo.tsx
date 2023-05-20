@@ -293,7 +293,7 @@ const HomeGetInfo = () => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Flow: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {Stream?.flow ? ethers.utils.formatEther(Stream?.flow.toString()) + " Ξ/s" : "-"}
+            {Stream?.flow ? ethers.utils.formatEther(Stream?.flow.toString()) + " Ξ/h" : "-"}
           </span>
 
           <div className="p-2 py-1"> </div>

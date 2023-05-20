@@ -149,17 +149,17 @@ const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
         <form className="md:w-[350px] w-[350px] lg:w-[350px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
           <span className="text-3xl text-black">Latest Proposition</span>
+
+          <div className="p-2 py-1"> </div>
+          <span className="p-2 text-lg font-bold"> Campaign ID: </span>
+          <span className="text-lg text-right min-w-[2rem]"> 
+          {latestProposition[0] === "0" ? "-" : latestProposition[0]} 
+          </span>
     
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> ID: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
           {latestProposition[1] === "0" ? "-" : latestProposition[1]}
-          </span>
-
-          <div className="p-2 py-1"> </div>
-          <span className="p-2 text-lg font-bold"> Campaign's ID: </span>
-          <span className="text-lg text-right min-w-[2rem]"> 
-          {latestProposition[0] === "0" ? "-" : latestProposition[0]} 
           </span>
 
           <div className="p-2 py-1"> </div>
@@ -198,7 +198,7 @@ const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
         <div className="flex-column">      
           <span className="p-2 text-lg font-bold"> Fee: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {fee ? fee/10 : "0"} %
+            {fee ? fee.toNumber()/10 : "0"} %
           </span>
 
           <div className="p-2 py-1"> </div>

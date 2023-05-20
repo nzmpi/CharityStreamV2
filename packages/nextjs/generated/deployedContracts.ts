@@ -5,7 +5,7 @@ const contracts = {
       chainId: "31337",
       contracts: {
         CharityStreamV2: {
-          address: "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+          address: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
           abi: [
             {
               inputs: [],
@@ -252,15 +252,15 @@ const contracts = {
               inputs: [
                 {
                   indexed: false,
-                  internalType: "uint16",
+                  internalType: "uint256",
                   name: "oldFee",
-                  type: "uint16",
+                  type: "uint256",
                 },
                 {
                   indexed: false,
-                  internalType: "uint16",
+                  internalType: "uint256",
                   name: "newFee",
-                  type: "uint16",
+                  type: "uint256",
                 },
               ],
               name: "newFeeEvent",
@@ -493,34 +493,6 @@ const contracts = {
               type: "function",
             },
             {
-              inputs: [],
-              name: "checking",
-              outputs: [
-                {
-                  internalType: "address",
-                  name: "",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256",
-                  name: "",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint32",
-                  name: "",
-                  type: "uint32",
-                },
-                {
-                  internalType: "string",
-                  name: "",
-                  type: "string",
-                },
-              ],
-              stateMutability: "view",
-              type: "function",
-            },
-            {
               inputs: [
                 {
                   internalType: "string",
@@ -559,6 +531,30 @@ const contracts = {
             {
               inputs: [
                 {
+                  internalType: "address",
+                  name: "",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "",
+                  type: "uint256",
+                },
+              ],
+              name: "donations",
+              outputs: [
+                {
+                  internalType: "uint256",
+                  name: "",
+                  type: "uint256",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
                   internalType: "uint256",
                   name: "_idCampaign",
                   type: "uint256",
@@ -579,9 +575,9 @@ const contracts = {
               name: "fee",
               outputs: [
                 {
-                  internalType: "uint16",
+                  internalType: "uint256",
                   name: "",
-                  type: "uint16",
+                  type: "uint256",
                 },
               ],
               stateMutability: "view",
@@ -864,9 +860,9 @@ const contracts = {
               name: "idCampaign",
               outputs: [
                 {
-                  internalType: "uint128",
+                  internalType: "uint256",
                   name: "",
-                  type: "uint128",
+                  type: "uint256",
                 },
               ],
               stateMutability: "view",
@@ -980,9 +976,9 @@ const contracts = {
             {
               inputs: [
                 {
-                  internalType: "uint16",
+                  internalType: "uint256",
                   name: "_newFee",
-                  type: "uint16",
+                  type: "uint256",
                 },
               ],
               name: "setFee",

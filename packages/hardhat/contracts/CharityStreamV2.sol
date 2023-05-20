@@ -9,24 +9,22 @@ import {ICharityStreamV2} from "./interfaces/ICharityStreamV2.sol";
  */
 contract CharityStreamV2 is ICharityStreamV2 {
     // 100% == 1000;
-    uint16 public fee;
+    uint256 public fee;
     address public owner;
     address private pendingOwner;
-    uint128 feeAmount;
+    uint256 feeAmount;
     // start from 1
-    uint128 public idCampaign = 1;
+    uint256 public idCampaign = 1;
     uint256 public streamedAmount;
 
     Campaign[] campaigns;
     Stream[] streams;
-    // the first element is idCampaign,
-    // the second element is idProposition
     LatestProposition latestProposition;
 
     // Campaign's backers
     mapping (uint256 => address[]) idToBackers;
     // backer => idCampaign => amount
-    mapping (address => mapping(uint256 => uint256)) donations;
+    mapping (address => mapping(uint256 => uint256)) public donations;
     mapping (address => uint256) refunds;
     // backer => all supported campaigns
     mapping (address => uint256[]) backedCampaigns;
@@ -47,15 +45,6 @@ contract CharityStreamV2 is ICharityStreamV2 {
     modifier onlyOwner() {
         if (msg.sender != owner) revert NotOwner();
         _;
-    }
-
-    function checking() external view returns (address, uint256, uint32, string memory) {
-        return (
-            address(this),
-            42,
-            69,
-            "take it boi"
-        );
     }
 
     function createCampaign(
@@ -144,9 +133,8 @@ contract CharityStreamV2 is ICharityStreamV2 {
         uint256 fee_ = fee;
         if (0 != fee_) {
             fee_ = amount*fee_/1000;
-            feeAmount = uint128(feeAmount + fee_);
+            feeAmount = feeAmount + fee_;
             amount -= fee_;
-            campaign.amountReceived = uint128(amount);
         }
         campaign.amountLeft = uint128(amount);
 
@@ -248,7 +236,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
     }
 
     function createStream(uint128 _amount, uint32 _paymentDuration) internal {
-        uint128 flow = _amount/_paymentDuration;
+        uint128 flow = _amount*3600/_paymentDuration;
         streams.push(Stream(
             uint32(block.timestamp),
             uint32(block.timestamp) + _paymentDuration,
@@ -290,7 +278,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
         return uint128(delta*_stream.flow);
     }
 
-    function setFee(uint16 _newFee) external payable onlyOwner() {
+    function setFee(uint256 _newFee) external payable onlyOwner() {
         if (1000 < _newFee) revert FeeTooHigh();
         emit newFeeEvent(fee, _newFee);
         fee = _newFee;

@@ -28,7 +28,7 @@ interface IEvents {
   event propositionIsNotApprovedEvent(uint256 indexed idCampaign, uint256 indexed idProposition);
   event createStreamEvent(address indexed receiver, uint256 indexed idStream, uint128 flow, uint128 funds);
   event fundsWithrawnEvent(address receiver, uint256 idStream, uint128 payment);
-  event newFeeEvent(uint16 oldFee, uint16 newFee);
+  event newFeeEvent(uint256 oldFee, uint256 newFee);
   event withdrawEvent(address indexed owner, uint256 amount);
   event transferOwnershipEvent(address indexed oldOwner, address indexed newOwner);
   event acceptOwnershipEvent(address indexed newOwner);

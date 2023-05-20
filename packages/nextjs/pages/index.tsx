@@ -7,7 +7,7 @@ import HomeGetInfo from "~~/components/assets/HomeGetInfo";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
-  const [activeItem, setActiveItem] = useState("Get Info");
+  const [activeItem, setActiveItem] = useState("Latest Info");
 
   function handleActiveItem(itemId: string) {
     setActiveItem(itemId);
@@ -38,8 +38,8 @@ const Home: NextPage = () => {
         <li onClick={() => handleActiveItem("Get Info")}>
           <a className={activeItem === "Get Info" ? "active" : ""}>Get Info</a>
         </li>
-        <li onClick={() => handleActiveItem("Donate")}>
-          <a className={activeItem === "Donate" ? "active" : ""}>Donate</a>
+        <li onClick={() => handleActiveItem("Donate and Vote")}>
+          <a className={activeItem === "Donate and Vote" ? "active" : ""}>Donate and Vote</a>
         </li>
       </ul>
 
@@ -53,7 +53,7 @@ const Home: NextPage = () => {
         <HomeGetInfo/>
       )}
 
-      {activeItem === "Donate" && (
+      {activeItem === "Donate and Vote" && (
         <HomeDonate/>
       )}
 
