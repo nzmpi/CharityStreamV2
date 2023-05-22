@@ -1,110 +1,87 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ethers, BigNumber } from "ethers";
 import { useScaffoldContractWrite, useScaffoldContractRead } from "~~/hooks/scaffold-eth";
-import { EtherInput } from "~~/components/scaffold-eth/Input/EtherInput";
 import { 
   RocketLaunchIcon, 
   NoSymbolIcon, 
   TrophyIcon
 } from "@heroicons/react/24/outline";
-import { Address } from "~~/components/scaffold-eth";
+import { Input } from "./Inputs";
 
 export const CreatorCampaign = () => {
-  const [timeUnit, setTimeUnit] = useState('Seconds');
-  const [nameOfCampaign, setNameOfCampaign] = useState("");
-  const [idCampaign, setIdCampaign] = useState<BigNumber>(BigNumber.from(0));
-  const [idStreamCheck, setIdStreamCheck] = useState<BigNumber>(BigNumber.from(0));
-  const [amountString, setAmountString] = useState("");
-  const [amount, setAmount] = useState<BigNumber>(BigNumber.from(0));
-  const [duration, setDuration] = useState<BigNumber>(BigNumber.from(0));
-  const [startTimeCheck, setStartTimeCheck] = useState("");   
-  const [endTimeCheck, setEndTimeCheck] = useState(""); 
+  const [timeUnit, setTimeUnit] = useState("Seconds");
+  const [campaignName, setCampaignName] = useState("");
+  const [idCampaignFinish, setIdCampaignFinish] = useState("0");
+  const [idCampaignRefund, setIdCampaignRefund] = useState("0");
+  const [amount, setAmount] = useState("");
+  const [duration, setDuration] = useState("");
+  const [durationBN, setDurationBN] = useState<BigNumber>(BigNumber.from(0));
 
-  const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.value === '') {
-      setDuration(BigNumber.from(0));
+  const handleDuration = (duration: string) => {
+    if (duration === "") {
       return;
     }
-    let value = BigNumber.from(e.target.value);
-    if (timeUnit === 'Minutes') {
+    let value = BigNumber.from(duration);
+    if (timeUnit === "Minutes") {
       value = value.mul(BigNumber.from(60));
-    } else if (timeUnit === 'Hours') {
+    } else if (timeUnit === "Hours") {
       value = value.mul(BigNumber.from(3600));
-    } else if (timeUnit === 'Days') {
+    } else if (timeUnit === "Days") {
       value = value.mul(BigNumber.from(86400));
     }
-    setDuration(BigNumber.from(value));
+    setDurationBN(value);
   };
 
-  const handleTimeUnitChange = (e: string) => {
-    setTimeUnit(e);
-  };
+  const getAmount = (amount: string) : BigNumber => {
+    if (amount === "") {
+      return BigNumber.from(0);
+    }
+    return ethers.utils.parseEther(amount);
+  }
 
-  const getStartTimeCheck = (time: number) => {
-    var a = new Date(time * 1000);
-    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    var year = a.getFullYear();
-    var month = months[a.getMonth()];
-    var date = a.getDate();
-    var hour = a.getHours();
-    var min = a.getMinutes() < 10 ? '0' + a.getMinutes() : a.getMinutes();
-    var sec = a.getSeconds() < 10 ? '0' + a.getSeconds() : a.getSeconds();
-    var formattedTime = hour + ':' + min + ':' + sec + ' ' + date + ' ' + month + ' ' + year ;
-    setStartTimeCheck(formattedTime);
-  };
-
-  const getEndTimeCheck = (time: number) => {
-    var a = new Date(time * 1000);
-    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    var year = a.getFullYear();
-    var month = months[a.getMonth()];
-    var date = a.getDate();
-    var hour = a.getHours();
-    var min = a.getMinutes() < 10 ? '0' + a.getMinutes() : a.getMinutes();
-    var sec = a.getSeconds() < 10 ? '0' + a.getSeconds() : a.getSeconds();
-    var formattedTime = hour + ':' + min + ':' + sec + ' ' + date + ' ' + month + ' ' + year ;
-    setEndTimeCheck(formattedTime);
-  };
-
-  const { writeAsync: writeAsyncC, isLoading: isLoadingC} = useScaffoldContractWrite({
+  const { writeAsync: createCampaign } = useScaffoldContractWrite({
     contractName: "CharityStreamV2",
     functionName: "createCampaign",
-    args: [nameOfCampaign, amount, duration],
+    args: [campaignName, getAmount(amount), durationBN],
   });
 
-  const { writeAsync: writeAsyncF, isLoading: isLoadingF} = useScaffoldContractWrite({
+  const { writeAsync: finishCampaign } = useScaffoldContractWrite({
     contractName: "CharityStreamV2",
     functionName: "finishCampaign",
-    args: [idCampaign],
+    args: [BigNumber.from(idCampaignFinish)],
   });
 
-  const { writeAsync: writeAsyncS, isLoading: isLoadingS} = useScaffoldContractWrite({
+  const { writeAsync: refundCampaign } = useScaffoldContractWrite({
     contractName: "CharityStreamV2",
     functionName: "stopAndRefundCampaign",
-    args: [idCampaign],
+    args: [BigNumber.from(idCampaignRefund)],
   });
 
-  const { data: Stream } = useScaffoldContractRead({
+  const { data: fee} = useScaffoldContractRead({
     contractName: "CharityStreamV2",
-    functionName: "getStream",
-    args: [idStreamCheck],
+    functionName: "fee",
   });
+
+  useEffect(() => {
+    handleDuration(duration);
+  }, [duration, timeUnit]);
 
   return (    
-    <div className="flex flex-col items-center mx-5 sm:mx-10 2xl:mx-20">
+    <div className="flex items-center flex-col flex-grow">
 
-      <div className={`mt-2 flex gap-2 max-w-2xl`}>
-        <div className="flex flex-col mt-8 px-7 py-8 bg-base-200 opacity-80 rounded-3xl shadow-lg border-2 border-primary">
-          <span className="text-2xl sm:text-4xl text-black">Create Campaign </span>
-          
+      <div className={"mx-auto mt-10"}>
+        <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
+        <div className="flex-column">
+          <span className="text-3xl text-black">Create Campaign</span>
+
             <div className="form-control mb-3">
               <label className="label">
-                <span className="label-text font-bold">Name of your Campaign </span>
+                <span className="label-text font-bold">Name your Campaign </span>
               </label>
 
               <input
                 type = "text"
-                onChange={e => setNameOfCampaign(e.target.value)}
+                onChange={e => setCampaignName(e.target.value)}
                 placeholder="Name"
                 className="input input-bordered input-accent input-sm bg-transparent"
               />
@@ -112,192 +89,150 @@ export const CreatorCampaign = () => {
 
             <div className="form-control mb-3">
               <label className="label">
-                <span className="label-text font-bold">Amount of ETH </span>
+                <span className="label-text font-bold">Goal amount</span>
               </label>
 
-              <EtherInput
-              placeholder="0.0"
-              value={amountString}
+              <Input
+              name = {"Ξ"}
+              placeholder="Amount"
+              value={amount}
               onChange={value => {
-                setAmount(ethers.utils.parseEther(value))
-                setAmountString(value)
-              }}
+                if (value === "") {
+                  setAmount("");
+                } else   
+                  setAmount(value);
+              }}                        
               />
             </div>
 
-        <div className="form-control mb-3">
-          <label className="label">
-            <span className="label-text font-bold">Duration of your Campaign </span>
-          </label>
+            <div className="form-control mb-3">
+            <label className="label">
+              <span className="label-text font-bold">Duration of your Campaign </span>
+            </label>
               
-          <div className="input-group">
-            <input
-              type="number"
-              onChange={handleDurationChange}
-              placeholder={timeUnit}
-              className="input input-bordered input-accent bg-transparent"
-            />
+            <div className="input-group">
+              <input
+                type="number"
+                onChange={e => setDuration(e.target.value)}
+                placeholder={timeUnit}
+                className="input input-bordered input-accent bg-transparent md:w-[210px] w-[210px] lg:w-[210px]"
+              />
 
-            <select
-              value={timeUnit}
-              onChange={e => handleTimeUnitChange(e.target.value)}
-              className="select select-bordered select-accent input-sm"
+              <select
+                value={timeUnit}
+                onChange={e => setTimeUnit(e.target.value)}
+                className="select select-bordered select-accent input-sm md:w-[100px] w-[100px] lg:w-[100px]"
+              >
+              <option value="Seconds">Seconds</option>
+              <option value="Minutes">Minutes</option>
+              <option value="Hours">Hours</option>
+              <option value="Days">Days</option>
+              </select>
+            </div>
+            </div>            
+
+            <div className="mt-5 flex flex-col items-center py-2">
+            <button
+              type="button"
+              disabled={
+                campaignName === "" ||
+                amount === "" ||
+                duration === ""
+              }              
+              onClick={async () => {
+                await createCampaign();
+              }}
+              className={"btn btn-primary font-black w-1/3 flex items-center"}
             >
-            <option value='Seconds'>Seconds</option>
-            <option value='Minutes'>Minutes</option>
-            <option value='Hours'>Hours</option>
-            <option value='Days'>Days</option>
-            </select>
+              <RocketLaunchIcon className="w-8 h-8 mt-0.5" /> 
+            </button>
             </div>
+
         </div>
+        </form>
+      </div> 
 
-
-        <div className="mt-8 justify-center items-center flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-5">
-          <button
-          className={`btn btn-primary rounded-full px-15 capitalize font-normal font-white w-24 flex gap-1 hover:gap-2 transition-all tracking-widest ${
-          isLoadingC ? "loading" : ""
-          }`}
-            onClick={ writeAsyncC }
-          >
-          {!isLoadingC&& (
-            <>
-            <RocketLaunchIcon className="w-8 h-8 mt-0.5" />
-            </>
-          )}
-          </button>
-          </div>
-        </div>
-      </div>
-
-      <div className={`mt-2 flex gap-2 max-w-2xl`}>
-          <div className="flex flex-col mt-8 px-7 py-8 bg-base-200 opacity-80 rounded-3xl shadow-lg border-2 border-primary">
-            <span className="text-2xl sm:text-4xl text-black">Finish Campaign </span>
-            <label className="label">
-              <span className="label-text font-bold">(and pay 0.5% fee) </span>
-            </label>
-
-            <div className="mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-5">
-              <input
-                type = "number"
-                onChange={e => {
-                  if (e.target.value === '') {
-                    setIdCampaign(BigNumber.from(0));
-                  } else {
-                    setIdCampaign(BigNumber.from(e.target.value))
-                  }
-                }}
-                placeholder="Campaign's ID"
-                className="input input-bordered input-accent bg-transparent"
-              />
-              <button
-                className={`btn btn-primary rounded-full capitalize font-normal font-white w-24 flex items-center gap-1 hover:gap-2 transition-all tracking-widest ${
-                isLoadingF ? "loading" : ""
-                }`}
-                  onClick={writeAsyncF}
-              >
-                {!isLoadingF&& (
-                  <>
-                    <TrophyIcon className="w-8 h-8 mt-0.5" />
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-      </div>
-
-      <div className={`mt-2 flex gap-2 max-w-2xl`}>
-          <div className="flex flex-col mt-8 px-7 py-8 bg-base-200 opacity-80 rounded-3xl shadow-lg border-2 border-primary">
-            <span className="text-2xl sm:text-4xl text-black">Stop Campaign </span>
-            <label className="label">
-              <span className="label-text font-bold">(and refund money) </span>
-            </label>
-
-            <div className="mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-5">
-              <input
-                type = "number"
-                onChange={e => {
-                  if (e.target.value === '') {
-                    setIdCampaign(BigNumber.from(0));
-                  } else {
-                    setIdCampaign(BigNumber.from(e.target.value))
-                  }
-                }}
-                placeholder="Campaign's ID"
-                className="input input-bordered input-accent bg-transparent"
-              />
-              <button
-                className={`btn btn-primary rounded-full capitalize font-normal font-white w-24 flex items-center gap-1 hover:gap-2 transition-all tracking-widest ${
-                isLoadingS ? "loading" : ""
-                }`}
-                  onClick={writeAsyncS}
-              >
-                {!isLoadingS&& (
-                  <>
-                    <NoSymbolIcon className="w-8 h-8 mt-0.5" />
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-      </div>
-
-      <div className={`mt-10 px-20 flex gap-2 max-w-2xl`}>
-        <div className="flex border-primary border-2 rounded-3xl shadow-lg px-7 py-5 ">
+      <div className={"mx-auto mt-10"}>
+        <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
+        
         <div className="flex-column">
-          <span className="text-2xl sm:text-3xl text-black">Get Stream </span>
-          <div className="p-2 py-1"> </div>
-            <input
+          <span className="text-3xl text-black">Finish Campaign</span>
+          
+            <div className="form-control mb-3">
+              <label className="label">
+                <span className="label-text font-bold">
+                (and pay {fee ? fee.toNumber()/10 : "0"}% fee)
+                </span>
+              </label>
+              <div className="mt-2 form-control flex-row gap-3">
+              <input
                 type = "number"
                 onChange={e => {
-                  if (e.target.value === '') {
-                    setIdStreamCheck(BigNumber.from(-1));
-                  } else {
-                    setIdStreamCheck(BigNumber.from(e.target.value));
-                  }  
-                  if (Stream?.startTime === undefined) {
-                    getStartTimeCheck(0);
-                  } else {
-                    getStartTimeCheck(Stream?.startTime);
-                  }    
-                  if (Stream?.endTime === undefined) {
-                    getEndTimeCheck(0);
-                  } else {
-                    getEndTimeCheck(Stream?.endTime);
-                  }        
+                  if (e.target.value === "") {
+                    setIdCampaignFinish("0");
+                  } else   
+                    setIdCampaignFinish(e.target.value);
                 }}
-                placeholder="Stream's ID"
-                className="input input-bordered input-accent bg-transparent"
-                />
-            <div className="p-2 py-1"> </div>
+                placeholder="Campaign ID"
+                className="input input-bordered input-accent bg-transparent md:w-[200px] w-[200px] lg:w-[200px]"
+              />
 
-          <span className="p-2 text-lg font-bold"> Receiver: </span>
-          <Address address={Stream?.receiver} />
-          <div className="p-2 py-1"> </div>
+            <button
+              type="button"
+              disabled={
+                idCampaignFinish === "0"
+              }              
+              onClick={async () => {
+                await finishCampaign();
+              }}
+              className={"btn btn-primary font-black w-1/3 flex items-center"}
+            >
+              <TrophyIcon className="w-8 h-8 mt-0.5" /> 
+            </button>
+            </div>
+            </div>
 
-          <span className="p-2 text-lg font-bold"> Starts: </span>
-          <span className="p-2 text-lg text-right min-w-[2rem]"> 
-          {startTimeCheck || "0"}
-          </span>
-          <div className="p-2 py-1"> </div>
-
-          <span className="p-2 text-lg font-bold"> Ends: </span>
-          <span className="p-2 text-lg text-right min-w-[2rem]"> 
-          {endTimeCheck || "0"}
-          </span>
-          <div className="p-2 py-1"> </div>
-
-          <span className="p-2 text-lg font-bold"> Flow: </span>
-          <span className="p-2 text-lg text-right min-w-[2rem]"> 
-            {Stream?.flow ? ethers.utils.formatEther(Stream?.flow.toString()) : "0.0"} ETH/s
-          </span>
-          <div className="p-2 py-1"> </div>
-
-          <span className="p-2 text-lg font-bold"> Withdrawn: </span>
-          <span className="p-2 text-lg text-right min-w-[2rem]"> 
-            {Stream?.leftAmount ? ethers.utils.formatEther(Stream?.leftAmount.toString()) : "0.0"} ETH
-          </span>
         </div>
+
+        <div className="mt-5 flex-column">
+          <span className="text-3xl text-black">Stop Campaign</span>
+          
+            <div className="form-control mb-3">
+              <label className="label">
+                <span className="label-text font-bold">
+                (and refund money)
+                </span>
+              </label>
+              <div className="mt-2 form-control flex-row gap-3">
+              <input
+                type = "number"
+                onChange={e => {
+                  if (e.target.value === "") {
+                    setIdCampaignRefund("0");
+                  } else   
+                    setIdCampaignRefund(e.target.value);
+                }}
+                placeholder="Campaign ID"
+                className="input input-bordered input-accent bg-transparent md:w-[200px] w-[200px] lg:w-[200px]"
+              />
+
+            <button
+              type="button"
+              disabled={
+                idCampaignRefund === "0"
+              }              
+              onClick={async () => {
+                await refundCampaign();
+              }}
+              className={"btn btn-primary font-black w-1/3 flex items-center"}
+            >
+              <NoSymbolIcon className="w-8 h-8 mt-0.5" /> 
+            </button>
+            </div>
+            </div>
+
         </div>
+        </form>
       </div>
         
     </div>

@@ -5,7 +5,7 @@ const contracts = {
       chainId: "31337",
       contracts: {
         CharityStreamV2: {
-          address: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+          address: "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
           abi: [
             {
               inputs: [],
@@ -488,6 +488,19 @@ const contracts = {
             {
               inputs: [],
               name: "acceptOwnership",
+              outputs: [],
+              stateMutability: "payable",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "address",
+                  name: "se",
+                  type: "address",
+                },
+              ],
+              name: "check",
               outputs: [],
               stateMutability: "payable",
               type: "function",

@@ -236,7 +236,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
     }
 
     function createStream(uint128 _amount, uint32 _paymentDuration) internal {
-        uint128 flow = _amount*3600/_paymentDuration;
+        uint128 flow = _amount/_paymentDuration;
         streams.push(Stream(
             uint32(block.timestamp),
             uint32(block.timestamp) + _paymentDuration,
@@ -274,7 +274,6 @@ contract CharityStreamV2 is ICharityStreamV2 {
             delta = endTime - _stream.lastWithdrawTime;
             _stream.lastWithdrawTime = endTime;
         }
-
         return uint128(delta*_stream.flow);
     }
 

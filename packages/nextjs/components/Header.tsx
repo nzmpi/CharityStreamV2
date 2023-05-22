@@ -2,7 +2,7 @@ import React, { useCallback, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { HomeIcon, Bars3Icon, BugAntIcon, LockClosedIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
+import { HomeIcon, Bars3Icon, BugAntIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 
@@ -45,12 +45,6 @@ export const Header = () => {
         <NavLink href="/creator">
           <WrenchScrewdriverIcon className="h-4 w-4" />
           Creator
-        </NavLink>
-      </li>
-      <li>
-        <NavLink href="/admin">
-          <LockClosedIcon className="h-4 w-4" />
-          Admin
         </NavLink>
       </li>
       <li>

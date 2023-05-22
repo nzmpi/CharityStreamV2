@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
 import { Address } from "~~/components/scaffold-eth";
 
-const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => { 
+export const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => { 
   const [latestCampaign, setLatestCampaign] = useState("0");
   const [latestProposition, setLatestProposition] = useState<string[]>(["0","0"]);
 
@@ -89,9 +89,6 @@ const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
     contractName: "CharityStreamV2",
     functionName: "streamedAmount",
   });
-
-  useEffect(() => {    
-  }, [fee]);
 
   useEffect(() => {
     if (latestIdCampaign === undefined) return;
@@ -230,5 +227,3 @@ const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
       </div>
   );
 };
-
-export default HomeLatestInfo;

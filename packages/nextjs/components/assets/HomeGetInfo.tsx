@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
 import { Address } from "~~/components/scaffold-eth";
 
-const HomeGetInfo = () => { 
+export const HomeGetInfo = () => { 
   const [idCampaign, setIdCampaign] = useState("0"); 
   const [idCampaignProposition, setIdCampaignProposition] = useState("0");
   const [idProposition, setIdProposition] = useState("0");
@@ -293,13 +293,13 @@ const HomeGetInfo = () => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Flow: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {Stream?.flow ? ethers.utils.formatEther(Stream?.flow.toString()) + " Ξ/h" : "-"}
+            {Stream?.flow ? ethers.utils.formatEther(Stream?.flow.mul(3600)) + " Ξ/h" : "-"}
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Left amount: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {Stream?.leftAmount ? ethers.utils.formatEther(Stream?.leftAmount.toString()) + " Ξ" : "-"}
+            {Stream?.leftAmount ? ethers.utils.formatEther(Stream?.leftAmount) + " Ξ" : "-"}
           </span>
         </div>
         </form>
@@ -308,5 +308,3 @@ const HomeGetInfo = () => {
       </div>
   );
 };
-
-export default HomeGetInfo;

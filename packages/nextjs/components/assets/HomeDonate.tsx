@@ -1,18 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { BigNumber, ethers } from "ethers";
 import { GiftIcon, WalletIcon, InboxArrowDownIcon } from "@heroicons/react/24/outline";
 import { useScaffoldContractWrite, useScaffoldContractRead } from "~~/hooks/scaffold-eth";
-import { EtherInput } from "~~/components/scaffold-eth/Input/EtherInput";
 import { useAccount } from "wagmi";
 import { Input } from "./Inputs";
 
-const HomeDonate = () => {
+export const HomeDonate = () => {
   const [idCampaign, setIdCampaign] = useState("0");
   const [idCampaignProposition, setIdCampaignProposition] = useState("0");
   const [idProposition, setIdProposition] = useState("0");
   const [amount, setAmount] = useState("");
   const [decision, setDecision] = useState("");
-  const [amountString, setAmountString] = useState(""); 
   const { address: signer } = useAccount();
 
   const getAmount = (amount: string) : string => {
@@ -88,9 +86,6 @@ const HomeDonate = () => {
       }
     });
   }
-
-  useEffect(() => {
-  }, [Refunds, Campaigns]);
 
   return (     
     <div className="flex items-center flex-col flex-grow">  
@@ -238,7 +233,7 @@ const HomeDonate = () => {
           </span>
           
           <div className="p-2 py-1"> </div>
-          <span className="p-2 text-lg font-bold"> Available refunds: </span>
+          <span className="p-2 text-lg font-bold"> Available refund: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
           {Refunds ? ethers.utils.formatEther(Refunds?.toString()) : "0.0"} Ξ
           </span>    
@@ -265,5 +260,3 @@ const HomeDonate = () => {
     </div>      
   );
 };
-
-export default HomeDonate;

@@ -1,115 +1,97 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ethers, BigNumber } from "ethers";
 import {
   MegaphoneIcon, 
-  ArchiveBoxArrowDownIcon,
-  BanknotesIcon
+  ArchiveBoxArrowDownIcon
 } from "@heroicons/react/24/outline";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
-import { EtherInput } from "~~/components/scaffold-eth/Input/EtherInput";
+import { Input } from "./Inputs";
 
 export const CreatorProposition = () => {
-  const [timeUnit, setTimeUnit] = useState('Seconds');
-  const [timeUnitVote, setTimeUnitVote] = useState('Seconds');
-  const [idCampaign, setIdCampaign] = useState<BigNumber>(BigNumber.from(0));
-  const [idProposition, setIdProposition] = useState<BigNumber>(BigNumber.from(0));
-  const [idStream, setIdStream] = useState<BigNumber>(BigNumber.from(0));
+  const [timeUnitPayment, setTimeUnitPayment] = useState("Seconds");
+  const [timeUnitVote, setTimeUnitVote] = useState("Seconds");
+  const [idCampaign, setIdCampaign] = useState("0");
+  const [idProposition, setIdProposition] = useState("0");
   const [description, setDescription] = useState("");
-  const [paymentDuration, setPaymentDuration] = useState(0);
-  const [voteDuration, setVoteDuration] = useState(0);
-  const [amountString, setAmountString] = useState("");
-  const [amount, setAmount] = useState<BigNumber>(BigNumber.from(0));
+  const [paymentDuration, setPaymentDuration] = useState("");
+  const [paymentDurationBN, setPaymentDurationBN] = useState<BigNumber>(BigNumber.from(0));
+  const [voteDuration, setVoteDuration] = useState("");
+  const [voteDurationBN, setVoteDurationBN] = useState<BigNumber>(BigNumber.from(0));
+  const [amount, setAmount] = useState("");
 
-  const handlePaymentDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value;
-    if (e.target.value === '') {
-      setVoteDuration(0);
+  const getAmount = (amount: string) : BigNumber => {
+    if (amount === "") {
+      return BigNumber.from(0);
+    }
+    return ethers.utils.parseEther(amount);
+  }
+
+  const handleDuration = (duration: string, durationOf: string) => {
+    if (duration === "") {
       return;
-    } else if (e.target.type === "number") {
-      value = parseInt(e.target.value, 10);
+    }
+    let value = BigNumber.from(duration);
+    if (durationOf === "Payment") {
+      if (timeUnitPayment === "Minutes") {
+        value = value.mul(BigNumber.from(60));
+      } else if (timeUnitPayment === "Hours") {
+        value = value.mul(BigNumber.from(3600));
+      } else if (timeUnitPayment === "Days") {
+        value = value.mul(BigNumber.from(86400));
+      }
+      setPaymentDurationBN(value);
     } else {
-      setVoteDuration(0);
-      return;
-    }
-
-    if (timeUnit === 'Minutes') {
-      value = value*60;
-    } else if (timeUnit === 'Hours') {
-      value = value*3600;
-    } else if (timeUnit === 'Days') {
-      value = value*86400;
-    }
-    setPaymentDuration(value);
+      if (timeUnitVote === "Minutes") {
+        value = value.mul(BigNumber.from(60));
+      } else if (timeUnitVote === "Hours") {
+        value = value.mul(BigNumber.from(3600));
+      } else if (timeUnitVote === "Days") {
+        value = value.mul(BigNumber.from(86400));
+      }
+      setVoteDurationBN(value);
+    }    
   };
 
-  const handleVoteDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value;
-    if (e.target.value === '') {
-      setVoteDuration(0);
-      return;
-    } else if (e.target.type === "number") {
-      value = parseInt(e.target.value, 10);
-    } else {
-      setVoteDuration(0);
-      return;
-    }
-    
-    if (timeUnitVote === 'Minutes') {
-      value = value*60;
-    } else if (timeUnitVote === 'Hours') {
-      value = value*3600;
-    } else if (timeUnitVote === 'Days') {
-      value = value*86400;
-    }
-    setVoteDuration(value);
-  };
-
-  const handleTimeUnitChange = (e: string) => {
-    setTimeUnit(e);
-  };
-
-  const handleTimeUnitVoteChange = (e: string) => {
-    setTimeUnitVote(e);
-  };
-
-  const { writeAsync: writeAsyncP, isLoading: isLoadingP} = useScaffoldContractWrite({
+  const { writeAsync: newProposition } = useScaffoldContractWrite({
     contractName: "CharityStreamV2",
     functionName: "newProposition",
-    args: [idCampaign, description, amount, paymentDuration, voteDuration],
+    args: [BigNumber.from(idCampaign), description, getAmount(amount), paymentDurationBN.toNumber(), voteDurationBN.toNumber()],
   });
 
-  const { writeAsync: writeAsyncE, isLoading: isLoadingE} = useScaffoldContractWrite({
+  const { writeAsync: endProposition } = useScaffoldContractWrite({
     contractName: "CharityStreamV2",
     functionName: "endProposition",
-    args: [idCampaign, idProposition],
+    args: [BigNumber.from(idCampaign), BigNumber.from(idProposition)],
   });
 
-  const { writeAsync: writeAsyncW, isLoading: isLoadingW } = useScaffoldContractWrite({
-    contractName: "CharityStreamV2",
-    functionName: "withdrawFunds",
-    args: [idStream],
-  });
+  useEffect(() => {
+    handleDuration(paymentDuration, "Payment");
+  }, [paymentDuration, timeUnitPayment]);
+
+  useEffect(() => {
+    handleDuration(voteDuration, "Vote");
+  }, [voteDuration, timeUnitVote]);
 
   return (    
-    <div className="flex flex-col items-left mx-5 sm:mx-10 2xl:mx-20">  
+    <div className="flex items-center flex-col flex-grow">  
 
-        <div className={"mt-2 flex gap-2 max-w-2xl"}>
-        <div className="flex flex-col mt-8 px-7 py-8 bg-base-200 opacity-80 rounded-3xl shadow-lg border-2 border-primary">
-          <span className="text-2xl sm:text-4xl text-black">Create Proposition </span>
-          
-            <div className="form-control mb-3">
+        <div className={"mx-auto mt-10"}>
+        <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
+        <div className="flex-column">
+          <span className="text-3xl text-black">Create Proposition</span>
+
+            <div className="form-control mb-3 mt-2">
               <label className="label">
-                <span className="label-text font-bold">Campaign's ID </span>
+                <span className="label-text font-bold">Campaign ID </span>
               </label>
 
               <input
                 type = "number"
                 onChange={e => {
-                  if (e.target.value === '') {
-                    setIdCampaign(BigNumber.from(0));
-                  } else {
-                    setIdCampaign(BigNumber.from(e.target.value))
-                  }
+                  if (e.target.value === "") {
+                    setIdCampaign("0");
+                  } else   
+                    setIdCampaign(e.target.value);
                 }}
                 placeholder="ID"
                 className="input input-bordered input-accent input-sm bg-transparent"
@@ -118,7 +100,7 @@ export const CreatorProposition = () => {
 
             <div className="form-control mb-3">
               <label className="label">
-                <span className="label-text font-bold">Description of your Proposition </span>
+                <span className="label-text font-bold">Describe your Proposition</span>
               </label>
 
               <input
@@ -131,180 +113,156 @@ export const CreatorProposition = () => {
 
             <div className="form-control mb-3">
               <label className="label">
-                <span className="label-text font-bold">Amount of ETH for this Proposition </span>
+                <span className="label-text font-bold">Amount of ETH for this Proposition</span>
               </label>
 
-              <EtherInput
-              placeholder="0.0"
-              value={amountString}
+              <Input
+              name = {"Ξ"}
+              placeholder="Amount"
+              value={amount}
               onChange={value => {
-                if (value === '') {
-                  setAmount(ethers.utils.parseEther('0'))
-                } else {
-                  setAmount(ethers.utils.parseEther(value))
-                  setAmountString(value)
-                }
+                if (value === "") {
+                  setAmount("");
+                } else   
+                  setAmount(value);
+              }}                        
+              />
+            </div>
+
+            <div className="form-control mb-3">
+            <label className="label">
+              <span className="label-text font-bold">Duration of Payment</span>
+            </label>
+              
+            <div className="input-group">
+              <input
+                type="number"
+                onChange={e => setPaymentDuration(e.target.value)}
+                placeholder={timeUnitPayment}
+                className="input input-bordered input-accent bg-transparent md:w-[210px] w-[210px] lg:w-[210px]"
+              />
+
+              <select
+                value={timeUnitPayment}
+                onChange={e => setTimeUnitPayment(e.target.value)}
+                className="select select-bordered select-accent input-sm md:w-[100px] w-[100px] lg:w-[100px]"
+              >
+              <option value="Seconds">Seconds</option>
+              <option value="Minutes">Minutes</option>
+              <option value="Hours">Hours</option>
+              <option value="Days">Days</option>
+              </select>
+            </div>
+            </div>    
+
+            <div className="form-control mb-3">
+            <label className="label">
+              <span className="label-text font-bold">Duration of Voting</span>
+            </label>
+              
+            <div className="input-group">
+              <input
+                type="number"
+                onChange={e => setVoteDuration(e.target.value)}
+                placeholder={timeUnitVote}
+                className="input input-bordered input-accent bg-transparent md:w-[210px] w-[210px] lg:w-[210px]"
+              />
+
+              <select
+                value={timeUnitVote}
+                onChange={e => setTimeUnitVote(e.target.value)}
+                className="select select-bordered select-accent input-sm md:w-[100px] w-[100px] lg:w-[100px]"
+              >
+              <option value="Seconds">Seconds</option>
+              <option value="Minutes">Minutes</option>
+              <option value="Hours">Hours</option>
+              <option value="Days">Days</option>
+              </select>
+            </div>
+            </div>        
+
+            <div className="mt-5 flex flex-col items-center py-2">
+            <button
+              type="button"
+              disabled={
+                idCampaign === "0" ||
+                description === "" ||
+                amount === "" ||
+                paymentDuration === "" ||
+                voteDuration === ""
+              }              
+              onClick={async () => {
+                await newProposition();
               }}
-              />
-            </div>
-
-        <div className="form-control mb-3">
-          <label className="label">
-            <span className="label-text font-bold">Duration of Payment </span>
-          </label>
-              
-          <div className="input-group">
-            <input
-              type="number"
-              onChange={handlePaymentDurationChange}
-              placeholder={timeUnit}
-              className="input input-bordered input-accent bg-transparent"
-            />
-
-            <select
-              value={timeUnit}
-              onChange={e => handleTimeUnitChange(e.target.value)}
-              className="select select-bordered select-accent input-sm"
+              className={"btn btn-primary font-black w-1/3 flex items-center"}
             >
-            <option value='Seconds'>Seconds</option>
-            <option value='Minutes'>Minutes</option>
-            <option value='Hours'>Hours</option>
-            <option value='Days'>Days</option>
-            </select>
+              <MegaphoneIcon className="w-8 h-8 mt-0.5" /> 
+            </button>
             </div>
-          </div>
-          <div className="form-control mb-3">
-          <label className="label">
-            <span className="label-text font-bold">Duration of Voting </span>
-          </label>
-              
-          <div className="input-group">
-            <input
-              type="number"
-              onChange={handleVoteDurationChange}
-              placeholder={timeUnitVote}
-              className="input input-bordered input-accent bg-transparent"
-            />
 
-            <select
-              value={timeUnitVote}
-              onChange={e => handleTimeUnitVoteChange(e.target.value)}
-              className="select select-bordered select-accent input-sm"
-            >
-            <option value='Seconds'>Seconds</option>
-            <option value='Minutes'>Minutes</option>
-            <option value='Hours'>Hours</option>
-            <option value='Days'>Days</option>
-            </select>
-            </div>
+        </div>
+        </form>
+        </div>
+
+        <div className={"mx-auto mt-10"}>
+        <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
+        <div className="flex-column">
+          <span className="text-3xl text-black">End Proposition</span>
+          
+          <div className="form-control mb-3 mt-2">
+            <label className="label">
+              <span className="label-text font-bold">Campaign ID </span>
+            </label>
+
+            <input
+              type = "number"
+              onChange={e => {
+                if (e.target.value === "") {
+                  setIdCampaign("0");
+                } else   
+                  setIdCampaign(e.target.value);
+              }}
+              placeholder="ID"
+              className="input input-bordered input-accent input-sm bg-transparent"
+            />
           </div>
 
-          <div className="mt-8 justify-center items-center flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-5">
+          <div className="form-control mb-3 mt-2">
+            <label className="label">
+              <span className="label-text font-bold">Proposition ID </span>
+            </label>
+
+            <input
+              type = "number"
+              onChange={e => {
+                if (e.target.value === "") {
+                  setIdProposition("0");
+                } else   
+                  setIdProposition(e.target.value);
+              }}
+              placeholder="ID"
+              className="input input-bordered input-accent input-sm bg-transparent"
+            />
+          </div>
+
+          <div className="mt-5 flex flex-col items-center py-2">
           <button
-          className={`btn btn-primary rounded-full px-15 capitalize font-normal font-white w-24 flex gap-1 hover:gap-2 transition-all tracking-widest ${
-          isLoadingP ? "loading" : ""
-          }`}
-            onClick={ writeAsyncP }
-          >
-          {!isLoadingP&& (
-            <>
-            <MegaphoneIcon className="w-8 h-8 mt-0.5" />
-            </>
-          )}
-          </button>
+              type="button"
+              disabled={
+                idCampaign === "0" ||
+                idProposition === "0"
+              }              
+              onClick={async () => {
+                await endProposition();
+              }}
+              className={"btn btn-primary font-black w-1/3 flex items-center"}
+            >
+              <ArchiveBoxArrowDownIcon className="w-8 h-8 mt-0.5" /> 
+            </button>
           </div>
+
         </div>
-        </div>
-
-        <div className={"mt-2 flex gap-2 max-w-2xl"}>
-          <div className="flex flex-col mt-8 px-7 py-8 bg-base-200 opacity-80 rounded-3xl shadow-lg border-2 border-primary">
-            <span className="text-2xl sm:text-4xl text-black">End Proposition </span>
-
-            <div className="form-control mb-3">
-              <label className="label">
-                <span className="label-text font-bold">Campaign's ID </span>
-              </label>
-
-              <input
-                type = "number"
-                onChange={e => {
-                  if (e.target.value === '') {
-                    setIdCampaign(BigNumber.from(0));
-                  } else {
-                    setIdCampaign(BigNumber.from(e.target.value))
-                  }
-                }}
-                placeholder="ID"
-                className="input input-bordered input-accent bg-transparent"
-              />
-            </div>
-            <div className="form-control mb-3">
-              <label className="label">
-                <span className="label-text font-bold">Proposition's ID </span>
-              </label>
-
-              <input
-                type = "number"
-                onChange={e => {
-                  if (e.target.value === '') {
-                    setIdProposition(BigNumber.from(0));
-                  } else {
-                    setIdProposition(BigNumber.from(e.target.value))
-                  }
-                }}
-                placeholder="ID"
-                className="input input-bordered input-accent bg-transparent"
-              />
-            </div>
-
-            <div className="mt-8 justify-center items-center flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-5">
-              <button
-                className={`btn btn-primary rounded-full capitalize font-normal font-white w-24 flex items-center gap-1 hover:gap-2 transition-all tracking-widest ${
-                isLoadingE ? "loading" : ""
-                }`}
-                  onClick={writeAsyncE}
-              >
-                {!isLoadingE&& (
-                  <>
-                    <ArchiveBoxArrowDownIcon className="w-8 h-8 mt-0.5" />
-                  </>
-                )}
-              </button>
-              </div>
-          </div>
-        </div>
-
-        <div className={`mt-2 flex gap-2 max-w-2xl`}>
-          <div className="flex flex-col mt-8 px-7 py-8 bg-base-200 opacity-80 rounded-3xl shadow-lg border-2 border-primary">
-            <span className="text-2xl sm:text-4xl text-black">Withdraw Stream Funds  </span>
-
-            <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-5">
-              <input
-                type = "number"
-                onChange={e => {
-                  if (e.target.value === '') {
-                    setIdStream(BigNumber.from(0));
-                  } else {
-                    setIdStream(BigNumber.from(e.target.value))
-                  }
-                }}
-                placeholder="Stream's ID"
-                className="input input-bordered input-accent bg-transparent"
-              />
-              <button
-                className={`btn btn-primary rounded-full capitalize font-normal font-white w-24 flex items-center gap-1 hover:gap-2 transition-all tracking-widest ${
-                isLoadingW ? "loading" : ""
-                }`}
-                  onClick={writeAsyncW}
-              >
-                {!isLoadingW&& (
-                  <>
-                    <BanknotesIcon className="w-8 h-8 mt-0.5" />
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
+        </form>
         </div>
 
     </div>      

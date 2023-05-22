@@ -1,9 +1,9 @@
 import Head from "next/head";
 import type { NextPage } from "next";
-import { useEffect, useState } from "react";
-import HomeLatestInfo from "~~/components/assets/HomeLatestInfo";
-import HomeDonate from "~~/components/assets/HomeDonate";
-import HomeGetInfo from "~~/components/assets/HomeGetInfo";
+import { useState } from "react";
+import { HomeLatestInfo } from "~~/components/assets/HomeLatestInfo";
+import { HomeDonate } from "~~/components/assets/HomeDonate";
+import { HomeGetInfo } from "~~/components/assets/HomeGetInfo";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
@@ -14,10 +14,9 @@ const Home: NextPage = () => {
   }
 
   let contractAddress;
-  let contractAbi;
   const { data: deployedContractData } = useDeployedContractInfo("CharityStreamV2");
   if (deployedContractData) {
-    ({ address: contractAddress, abi: contractAbi } = deployedContractData);
+    ({ address: contractAddress } = deployedContractData);
   }
 
   return (
