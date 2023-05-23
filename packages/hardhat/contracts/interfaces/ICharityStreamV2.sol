@@ -32,15 +32,15 @@ interface ICharityStreamV2 is IErrors, IEvents {
   function withdrawFee() external payable;
   function transferOwnership(address _newOwner) external payable;
   function acceptOwnership() external payable;
-  function getNumberOfStreams() external view returns (uint256);
   function getRefunds(address _addr) external view returns (uint256);
   function getCampaign(uint256 _idCampaign) external view returns (Campaign memory);
+  function getCampaigns() external view returns (Campaign[] memory);
   function getBackedCampaigns(address _backer) external view returns (uint256[] memory);
   function getProposition(
     uint256 _idCampaign, 
     uint256 _idProposition
   ) external view returns (Proposition memory);
-  function getStream(uint256 _idStream) external view returns (Stream memory);
+  function getStreams() external view returns (Stream[] memory);
 
   enum Status {NotActive, Active, Finished, Refunded}
 

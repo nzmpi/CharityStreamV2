@@ -13,7 +13,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
     address public owner;
     address private pendingOwner;
     uint256 feeAmount;
-    // start from 1
+    // starts from 1
     uint256 public idCampaign = 1;
     uint256 public streamedAmount;
 
@@ -24,12 +24,12 @@ contract CharityStreamV2 is ICharityStreamV2 {
     // Campaign's backers
     mapping (uint256 => address[]) idToBackers;
     // backer => idCampaign => amount
-    mapping (address => mapping(uint256 => uint256)) public donations;
+    mapping (address => mapping(uint256 => uint256)) donations;
     mapping (address => uint256) refunds;
     // backer => all supported campaigns
     mapping (address => uint256[]) backedCampaigns;
     // idCampaign => propositions
-    mapping (uint256 => Proposition[]) public idToProposition;
+    mapping (uint256 => Proposition[]) idToProposition;
     // backer => idCampaign => idProposition => bool 
     mapping (address => mapping(uint256 => mapping(uint256 => bool))) hasVoted;
 
@@ -75,7 +75,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
             _amount, 
             _name
         );
-        ++idCampaign;        
+        ++idCampaign;           
     }
 
     function donate(uint256 _idCampaign) external payable {
@@ -219,7 +219,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
         Campaign storage campaign = campaigns[_idCampaign-1];
         if (proposition.numberOfVoters < campaign.quorum) { 
             campaign.amountLeft = campaign.amountLeft + proposition.amount;
-            emit quorumIsNotMetEvent(_idCampaign, _idProposition);
+            emit quorumIsNotMetEvent(msg.sender, _idCampaign, _idProposition);
         } else {
             if (proposition.ayes > proposition.nays) { 
                 uint128 amount = proposition.amount;                               
@@ -227,10 +227,10 @@ contract CharityStreamV2 is ICharityStreamV2 {
                     amount, 
                     proposition.paymentDuration
                 );
-                emit propositionIsApprovedEvent(_idCampaign, _idProposition);
+                emit propositionIsApprovedEvent(msg.sender, _idCampaign, _idProposition);
             } else {
                 campaign.amountLeft = campaign.amountLeft + proposition.amount;
-                emit propositionIsNotApprovedEvent(_idCampaign, _idProposition);
+                emit propositionIsNotApprovedEvent(msg.sender, _idCampaign, _idProposition);
             }
         }
     }
@@ -304,16 +304,16 @@ contract CharityStreamV2 is ICharityStreamV2 {
         emit acceptOwnershipEvent(msg.sender);
     }
 
-    function getNumberOfStreams() external view returns (uint256) {
-        return streams.length;
-    }
-
     function getRefunds(address _addr) external view returns (uint256) {
         return refunds[_addr];
     }
 
     function getCampaign(uint256 _idCampaign) external view returns (Campaign memory) {
         return campaigns[_idCampaign-1];
+    }
+
+    function getCampaigns() external view returns (Campaign[] memory) {
+        return campaigns;
     }
 
     function getBackedCampaigns(address _backer) external view returns (uint256[] memory) {
@@ -331,8 +331,8 @@ contract CharityStreamV2 is ICharityStreamV2 {
         return latestProposition;
     }
 
-    function getStream(uint256 _idStream) external view returns (Stream memory) {
-        return streams[_idStream-1];
+    function getStreams() external view returns (Stream[] memory) {
+        return streams;
     }
 
     function sqrt(uint256 x) internal pure returns (uint256 y) {

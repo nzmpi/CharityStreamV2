@@ -2,16 +2,17 @@ import { ethers, BigNumber } from "ethers";
 import { useEffect, useState } from "react";
 import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
 import { Address } from "~~/components/scaffold-eth";
+import { Stream } from "stream";
 
 export const HomeGetInfo = () => { 
   const [idCampaign, setIdCampaign] = useState("0"); 
   const [idCampaignProposition, setIdCampaignProposition] = useState("0");
   const [idProposition, setIdProposition] = useState("0");
-  const [idStream, setIdStream] = useState("0"); 
+  const [idStream, setIdStream] = useState(0); 
   const [campaignStatus, setCampaignStatus] = useState("");
   const [propositionStatus, setPropositionStatus] = useState("");
 
-  const getEndTime = (time: number) : string => {
+  const getTime = (time: number) : string => {
     if (time === -1) {
       return "-";
     }
@@ -39,20 +40,45 @@ export const HomeGetInfo = () => {
     time %= 3600;
     var mins = Math.floor(time/60);
     var secs = time%60;
-    var formattedTime;
-    if (months !== 0) {
-      formattedTime = months + ' months ' + days + ' days ' + hours + ' hours ' + mins + ' minutes ' + secs + ' seconds';
-    } else if (days !== 0) {
-      formattedTime = days + ' days ' + hours + ' hours ' + mins + ' minutes ' + secs + ' seconds';
-    } else if (hours !== 0) {
-      formattedTime = hours + ' hours ' + mins + ' minutes ' + secs + ' seconds';
-    } else if (mins !== 0) {
-      formattedTime = mins + ' minutes ' + secs + ' seconds';
-    } else {
-      formattedTime = secs + ' seconds';
-    }
+    var formattedTime = "";
+    if (months !== 0) formattedTime += months + ' months ';
+    if (days !== 0) formattedTime += days + ' days ';
+    if (hours !== 0) formattedTime += hours + ' hours ';
+    if (mins !== 0) formattedTime += mins + ' minutes ';
+    if (secs !== 0) formattedTime += secs + ' seconds';
+  
     return formattedTime;
   };
+
+  type StreamType = {
+    startTime: number;
+    endTime: number;
+    lastWithdrawTime: number;
+    receiver: string;
+    flow: string;
+    leftAmount: string;
+  };
+
+  const getStream = (id: number) : StreamType => {
+    let Stream : StreamType = {
+      startTime: -1,
+      endTime: -1,
+      lastWithdrawTime: -1,
+      receiver: ethers.constants.AddressZero,
+      flow: "-",
+      leftAmount: "-",
+    };
+
+    if (Streams === undefined || id <= 0 || id > Streams.length) return Stream;
+    Stream.startTime = Streams[id - 1].startTime;
+    Stream.endTime = Streams[id - 1].endTime;
+    Stream.lastWithdrawTime = Streams[id - 1].lastWithdrawTime;
+    Stream.receiver = Streams[id - 1].receiver;
+    Stream.flow = ethers.utils.formatEther(Streams[id - 1].flow.mul(3600)) + " Ξ/h";
+    Stream.leftAmount = ethers.utils.formatEther(Streams[id - 1].leftAmount) + " Ξ";
+    
+    return Stream;
+  }
 
   const { data: Campaign } = useScaffoldContractRead({
     contractName: "CharityStreamV2",
@@ -66,10 +92,9 @@ export const HomeGetInfo = () => {
     args: [BigNumber.from(idCampaignProposition), BigNumber.from(idProposition)],
   });
 
-  const { data: Stream } = useScaffoldContractRead({
+  const { data: Streams } = useScaffoldContractRead({
     contractName: "CharityStreamV2",
-    functionName: "getStream",
-    args: [BigNumber.from(idStream)],
+    functionName: "getStreams",
   });
 
   useEffect(() => { 
@@ -104,7 +129,7 @@ export const HomeGetInfo = () => {
         <div className={"mx-auto mt-10"}>
         <form className="md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
-          <span className="text-3xl text-black">Get Campaign </span>
+          <span className="text-3xl text-black">Get Campaign</span>
 
           <div className="p-2 py-2"> </div>
             <input
@@ -138,7 +163,7 @@ export const HomeGetInfo = () => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Ends: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {getEndTime(Campaign?.endTime || -1)}
+          {getTime(Campaign?.endTime || -1)}
           </span>
 
           <div className="p-2 py-1"> </div>
@@ -226,7 +251,7 @@ export const HomeGetInfo = () => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Voting Ends: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {getEndTime(Proposition?.voteEndTime || -1)}
+          {getTime(Proposition?.voteEndTime || -1)}
           </span>
 
           <div className="p-2 py-1"> </div>
@@ -266,9 +291,9 @@ export const HomeGetInfo = () => {
                 type = "number"
                 onChange={e => {
                   if (e.target.value === "") {
-                    setIdStream("0");
+                    setIdStream(0);
                   } else   
-                    setIdStream(e.target.value);
+                    setIdStream(parseInt(e.target.value));
                 }}
                 placeholder="Stream ID"
                 className="input input-bordered input-accent bg-transparent"
@@ -276,30 +301,30 @@ export const HomeGetInfo = () => {
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Receiver: </span>
-          <Address address={Stream?.receiver || ethers.constants.AddressZero} />
+          <Address address={getStream(idStream).receiver} />
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Starts: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {getEndTime(Stream?.startTime || -1)}
+          {getTime(getStream(idStream).startTime)}
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Ends: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {getEndTime(Stream?.endTime || -1)}
+          {getTime(getStream(idStream).endTime)}
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Flow: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {Stream?.flow ? ethers.utils.formatEther(Stream?.flow.mul(3600)) + " Ξ/h" : "-"}
+          {getStream(idStream).flow}
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Left amount: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {Stream?.leftAmount ? ethers.utils.formatEther(Stream?.leftAmount) + " Ξ" : "-"}
+          {getStream(idStream).leftAmount}
           </span>
         </div>
         </form>

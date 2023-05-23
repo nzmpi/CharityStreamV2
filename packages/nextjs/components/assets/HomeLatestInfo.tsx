@@ -4,8 +4,8 @@ import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
 import { Address } from "~~/components/scaffold-eth";
 
 export const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => { 
-  const [latestCampaign, setLatestCampaign] = useState("0");
-  const [latestProposition, setLatestProposition] = useState<string[]>(["0","0"]);
+  const [idLatestCampaign, setIdLatestCampaign] = useState("0");
+  const [idsLatestProposition, setIdsLatestProposition] = useState(["0","0"]);
 
   const getEndTime = (time: number) : string => {
     if (time === -1) {
@@ -19,8 +19,8 @@ export const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
     var hour = a.getHours();
     var min = a.getMinutes() < 10 ? '0' + a.getMinutes() : a.getMinutes();
     var sec = a.getSeconds() < 10 ? '0' + a.getSeconds() : a.getSeconds();
-    var formattedTime = hour + ':' + min + ':' + sec + ' ' + date + ' ' + month + ' ' + year ;
-    return formattedTime;
+  
+    return hour + ':' + min + ':' + sec + ' ' + date + ' ' + month + ' ' + year;
   };
 
   const getDuration = (time: number) : string => {
@@ -35,73 +35,68 @@ export const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
     time %= 3600;
     var mins = Math.floor(time/60);
     var secs = time%60;
-    var formattedTime;
-    if (months !== 0) {
-      formattedTime = months + ' months ' + days + ' days ' + hours + ' hours ' + mins + ' minutes ' + secs + ' seconds';
-    } else if (days !== 0) {
-      formattedTime = days + ' days ' + hours + ' hours ' + mins + ' minutes ' + secs + ' seconds';
-    } else if (hours !== 0) {
-      formattedTime = hours + ' hours ' + mins + ' minutes ' + secs + ' seconds';
-    } else if (mins !== 0) {
-      formattedTime = mins + ' minutes ' + secs + ' seconds';
-    } else {
-      formattedTime = secs + ' seconds';
-    }
+    var formattedTime = "";
+    if (months !== 0) formattedTime += months + ' months ';
+    if (days !== 0) formattedTime += days + ' days ';
+    if (hours !== 0) formattedTime += hours + ' hours ';
+    if (mins !== 0) formattedTime += mins + ' minutes ';
+    if (secs !== 0) formattedTime += secs + ' seconds';
+  
     return formattedTime;
   };
 
-  const { data: latestIdCampaign} = useScaffoldContractRead({
+  const { data: idCampaign} = useScaffoldContractRead({
     contractName: "CharityStreamV2",
     functionName: "idCampaign",
   });
 
-  const { data: latestCampaignData} = useScaffoldContractRead({
+  const { data: campaignData} = useScaffoldContractRead({
     contractName: "CharityStreamV2",
     functionName: "getCampaign",
-    args: [BigNumber.from(latestCampaign)],
+    args: [BigNumber.from(idLatestCampaign)],
   });
 
-  const { data: latestIdProposition} = useScaffoldContractRead({
+  const { data: idLatestProposition} = useScaffoldContractRead({
     contractName: "CharityStreamV2",
     functionName: "getLatestProposition",
   });
 
-  const { data: latestPropositionData} = useScaffoldContractRead({
+  const { data: propositionData} = useScaffoldContractRead({
     contractName: "CharityStreamV2",
     functionName: "getProposition",
     args: [
-      BigNumber.from(latestProposition[0]),
-      BigNumber.from(latestProposition[1])
+      BigNumber.from(idsLatestProposition[0]),
+      BigNumber.from(idsLatestProposition[1])
     ],
   });
 
-  const { data: fee} = useScaffoldContractRead({
+  const { data: Fee} = useScaffoldContractRead({
     contractName: "CharityStreamV2",
     functionName: "fee",
   });
 
-  const { data: numStreams} = useScaffoldContractRead({
+  const { data: Streams} = useScaffoldContractRead({
     contractName: "CharityStreamV2",
-    functionName: "getNumberOfStreams",
+    functionName: "getStreams",
   });
 
-  const { data: streamedAmount} = useScaffoldContractRead({
+  const { data: StreamedAmount} = useScaffoldContractRead({
     contractName: "CharityStreamV2",
     functionName: "streamedAmount",
   });
 
   useEffect(() => {
-    if (latestIdCampaign === undefined) return;
-    setLatestCampaign(latestIdCampaign.sub(BigNumber.from(1)).toString());         
-  }, [latestIdCampaign]);
+    if (idCampaign === undefined) return;
+    setIdLatestCampaign(idCampaign.sub(BigNumber.from(1)).toString());         
+  }, [idCampaign]);
 
   useEffect(() => {
-    if (latestIdProposition === undefined) return;
+    if (idLatestProposition === undefined) return;
     const lP = [];
-    lP.push(latestIdProposition.idCampaign.toString());
-    lP.push(latestIdProposition.idProposition.toString());
-    setLatestProposition(lP);         
-  }, [latestIdProposition]);
+    lP.push(idLatestProposition.idCampaign.toString());
+    lP.push(idLatestProposition.idProposition.toString());
+    setIdsLatestProposition(lP);         
+  }, [idLatestProposition]);
 
   return (    
       <div className="flex items-center flex-col flex-grow">
@@ -114,29 +109,35 @@ export const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> ID: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {latestCampaign === "0" ? "-" : latestCampaign}
+          {idLatestCampaign === "0" ? "-" : idLatestCampaign}
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Name: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {latestCampaignData?.name || "-"} 
+          {campaignData?.name || "-"} 
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Creator: </span>
-          <Address address={latestCampaignData?.owner} />
+          <Address address={campaignData?.owner} />
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Ends: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {getEndTime(latestCampaignData?.endTime || -1)}
+          {getEndTime(campaignData?.endTime || -1)}
           </span>
 
           <div className="p-2 py-1"> </div>
-          <span className="p-2 text-lg font-bold"> Amount: </span>
+          <span className="p-2 text-lg font-bold"> Goal amount: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {latestCampaignData?.amountGoal ? ethers.utils.formatEther(latestCampaignData?.amountGoal.toString()) + " Ξ" : "-"}
+            {campaignData?.amountGoal ? ethers.utils.formatEther(campaignData?.amountGoal.toString()) + " Ξ" : "-"}
+          </span>
+
+          <div className="p-2 py-1"> </div>
+          <span className="p-2 text-lg font-bold"> Received amount: </span>
+          <span className="text-lg text-right min-w-[2rem]"> 
+            {campaignData?.amountReceived ? ethers.utils.formatEther(campaignData?.amountReceived.toString()) + " Ξ" : "-"}
           </span>
         </div>
         </form>
@@ -150,40 +151,40 @@ export const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Campaign ID: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {latestProposition[0] === "0" ? "-" : latestProposition[0]} 
+          {idsLatestProposition[0] === "0" ? "-" : idsLatestProposition[0]} 
           </span>
     
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> ID: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {latestProposition[1] === "0" ? "-" : latestProposition[1]}
+          {idsLatestProposition[1] === "0" ? "-" : idsLatestProposition[1]}
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Description: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {latestPropositionData?.description || "-"} 
+          {propositionData?.description || "-"} 
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Voting Ends: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
           { 
-          getEndTime(latestPropositionData?.voteEndTime || -1)
+          getEndTime(propositionData?.voteEndTime || -1)
           }
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Amount: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {latestPropositionData?.amount ? ethers.utils.formatEther(latestPropositionData?.amount.toString()) + " ETH" : "-"}
+            {propositionData?.amount ? ethers.utils.formatEther(propositionData?.amount.toString()) + " ETH" : "-"}
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Payment Duration: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
           { 
-          getDuration(latestPropositionData?.paymentDuration || -1)
+          getDuration(propositionData?.paymentDuration || -1)
           }
           </span>
         </div>
@@ -195,7 +196,7 @@ export const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
         <div className="flex-column">      
           <span className="p-2 text-lg font-bold"> Fee: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {fee ? fee.toNumber()/10 : "0"} %
+            {Fee ? Fee.toNumber()/10 : "0"} %
           </span>
 
           <div className="p-2 py-1"> </div>
@@ -205,19 +206,19 @@ export const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Campaigns created: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {latestCampaign}
+          {idLatestCampaign}
           </span>  
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Streams created: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {numStreams?.toString() || "0"}
+          {Streams?.length || "0"}
           </span>  
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Streamed amount: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {streamedAmount ? ethers.utils.formatEther(streamedAmount.toString()) : "0"} Ξ
+          {StreamedAmount ? ethers.utils.formatEther(StreamedAmount.toString()) : "0"} Ξ
           </span>
 
         </div>

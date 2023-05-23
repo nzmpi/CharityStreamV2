@@ -4,8 +4,13 @@ import {
   MegaphoneIcon, 
   ArchiveBoxArrowDownIcon
 } from "@heroicons/react/24/outline";
-import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
+import { 
+  useScaffoldContractWrite, 
+  useScaffoldEventSubscriber 
+} from "~~/hooks/scaffold-eth";
 import { Input } from "./Inputs";
+import { toast } from "react-hot-toast";
+import { useAccount } from "wagmi";
 
 export const CreatorProposition = () => {
   const [timeUnitPayment, setTimeUnitPayment] = useState("Seconds");
@@ -18,6 +23,7 @@ export const CreatorProposition = () => {
   const [voteDuration, setVoteDuration] = useState("");
   const [voteDurationBN, setVoteDurationBN] = useState<BigNumber>(BigNumber.from(0));
   const [amount, setAmount] = useState("");
+  const { address: signer } = useAccount();
 
   const getAmount = (amount: string) : BigNumber => {
     if (amount === "") {
@@ -52,6 +58,39 @@ export const CreatorProposition = () => {
     }    
   };
 
+  const notifyLive = (idProposition: string) => 
+  toast("Proposition #" + idProposition + " is live!", 
+  {
+    className: "md:w-[250px] w-[250px] lg:w-[250px] md:h-[80px] h-[80px] lg:h-[80px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 px-7 py-5",
+    icon: "📣",
+    position: "bottom-right",
+    style: {
+      padding: "20px",
+    }
+  });
+
+  const notifyResult = (result: string) => 
+  toast(result, 
+  {
+    className: "md:w-[250px] w-[250px] lg:w-[250px] md:h-[80px] h-[80px] lg:h-[80px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 px-7 py-5",
+    icon: "🚨",
+    position: "bottom-right",
+    style: {
+      padding: "20px",
+    }
+  });
+
+  const notifyStream = (result: string) => 
+  toast(result, 
+  {
+    className: "md:w-[250px] w-[250px] lg:w-[250px] md:h-[80px] h-[80px] lg:h-[80px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 px-7 py-5",
+    icon: "💰",
+    position: "bottom-right",
+    style: {
+      padding: "20px",
+    }
+  });
+
   const { writeAsync: newProposition } = useScaffoldContractWrite({
     contractName: "CharityStreamV2",
     functionName: "newProposition",
@@ -71,6 +110,65 @@ export const CreatorProposition = () => {
   useEffect(() => {
     handleDuration(voteDuration, "Vote");
   }, [voteDuration, timeUnitVote]);
+
+  useScaffoldEventSubscriber({
+    contractName: "CharityStreamV2",
+    eventName: "newPropositionEvent",
+    listener: (
+      creator, 
+      idCampaign, 
+      idProposition, 
+      description, 
+      amount, 
+      paymentDuration, 
+      voteEndTime
+    ) => {
+      if (creator === signer) {
+        notifyLive(idProposition.toString());
+      }
+    },
+  });
+
+  useScaffoldEventSubscriber({
+    contractName: "CharityStreamV2",
+    eventName: "quorumIsNotMetEvent",
+    listener: (creator, idCampaign, idProposition) => {
+      if (creator === signer) {
+        notifyResult("Quorum is not met!");
+      }
+    },
+  });
+
+  useScaffoldEventSubscriber({
+    contractName: "CharityStreamV2",
+    eventName: "propositionIsApprovedEvent",
+    listener: (creator, idCampaign, idProposition) => {
+      if (creator === signer) {
+        notifyResult("Proposition is approved!");
+      }
+    },
+  });
+
+  useScaffoldEventSubscriber({
+    contractName: "CharityStreamV2",
+    eventName: "propositionIsNotApprovedEvent",
+    listener: (creator, idCampaign, idProposition) => {
+      if (creator === signer) {
+        notifyResult("Proposition is not approved!");
+      }
+    },
+  });
+
+  useScaffoldEventSubscriber({
+    contractName: "CharityStreamV2",
+    eventName: "createStreamEvent",
+    listener: (receiver, idStream, flow, funds) => {
+      if (receiver === signer) {
+        notifyStream("Stream #" + idStream.toString() +
+        " with " + ethers.utils.formatEther(funds) + "Ξ is live!");
+      }
+    },
+  });
 
   return (    
     <div className="flex items-center flex-col flex-grow">  

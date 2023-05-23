@@ -23,9 +23,9 @@ interface IEvents {
     uint32 voteEndTime
   );
   event voteEvent(address indexed voter, uint256 indexed idCampaign, uint256 indexed idProposition, bool decision, uint128 votePower);
-  event quorumIsNotMetEvent(uint256 indexed idCampaign, uint256 indexed idProposition);
-  event propositionIsApprovedEvent(uint256 indexed idCampaign, uint256 indexed idProposition);
-  event propositionIsNotApprovedEvent(uint256 indexed idCampaign, uint256 indexed idProposition);
+  event quorumIsNotMetEvent(address indexed creator, uint256 indexed idCampaign, uint256 indexed idProposition);
+  event propositionIsApprovedEvent(address indexed creator, uint256 indexed idCampaign, uint256 indexed idProposition);
+  event propositionIsNotApprovedEvent(address indexed creator, uint256 indexed idCampaign, uint256 indexed idProposition);
   event createStreamEvent(address indexed receiver, uint256 indexed idStream, uint128 flow, uint128 funds);
   event fundsWithrawnEvent(address receiver, uint256 idStream, uint128 payment);
   event newFeeEvent(uint256 oldFee, uint256 newFee);

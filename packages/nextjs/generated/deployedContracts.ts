@@ -5,7 +5,7 @@ const contracts = {
       chainId: "31337",
       contracts: {
         CharityStreamV2: {
-          address: "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+          address: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
           abi: [
             {
               inputs: [],
@@ -320,6 +320,12 @@ const contracts = {
               inputs: [
                 {
                   indexed: true,
+                  internalType: "address",
+                  name: "creator",
+                  type: "address",
+                },
+                {
+                  indexed: true,
                   internalType: "uint256",
                   name: "idCampaign",
                   type: "uint256",
@@ -339,6 +345,12 @@ const contracts = {
               inputs: [
                 {
                   indexed: true,
+                  internalType: "address",
+                  name: "creator",
+                  type: "address",
+                },
+                {
+                  indexed: true,
                   internalType: "uint256",
                   name: "idCampaign",
                   type: "uint256",
@@ -356,6 +368,12 @@ const contracts = {
             {
               anonymous: false,
               inputs: [
+                {
+                  indexed: true,
+                  internalType: "address",
+                  name: "creator",
+                  type: "address",
+                },
                 {
                   indexed: true,
                   internalType: "uint256",
@@ -495,19 +513,6 @@ const contracts = {
             {
               inputs: [
                 {
-                  internalType: "address",
-                  name: "se",
-                  type: "address",
-                },
-              ],
-              name: "check",
-              outputs: [],
-              stateMutability: "payable",
-              type: "function",
-            },
-            {
-              inputs: [
-                {
                   internalType: "string",
                   name: "_name",
                   type: "string",
@@ -539,30 +544,6 @@ const contracts = {
               name: "donate",
               outputs: [],
               stateMutability: "payable",
-              type: "function",
-            },
-            {
-              inputs: [
-                {
-                  internalType: "address",
-                  name: "",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256",
-                  name: "",
-                  type: "uint256",
-                },
-              ],
-              name: "donations",
-              outputs: [
-                {
-                  internalType: "uint256",
-                  name: "",
-                  type: "uint256",
-                },
-              ],
-              stateMutability: "view",
               type: "function",
             },
             {
@@ -696,6 +677,66 @@ const contracts = {
             },
             {
               inputs: [],
+              name: "getCampaigns",
+              outputs: [
+                {
+                  components: [
+                    {
+                      internalType: "enum ICharityStreamV2.Status",
+                      name: "status",
+                      type: "uint8",
+                    },
+                    {
+                      internalType: "uint32",
+                      name: "endTime",
+                      type: "uint32",
+                    },
+                    {
+                      internalType: "uint64",
+                      name: "quorum",
+                      type: "uint64",
+                    },
+                    {
+                      internalType: "address",
+                      name: "owner",
+                      type: "address",
+                    },
+                    {
+                      internalType: "uint128",
+                      name: "amountGoal",
+                      type: "uint128",
+                    },
+                    {
+                      internalType: "uint128",
+                      name: "amountReceived",
+                      type: "uint128",
+                    },
+                    {
+                      internalType: "uint128",
+                      name: "amountLeft",
+                      type: "uint128",
+                    },
+                    {
+                      internalType: "uint128",
+                      name: "idProposition",
+                      type: "uint128",
+                    },
+                    {
+                      internalType: "string",
+                      name: "name",
+                      type: "string",
+                    },
+                  ],
+                  internalType: "struct ICharityStreamV2.Campaign[]",
+                  name: "",
+                  type: "tuple[]",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [],
               name: "getLatestProposition",
               outputs: [
                 {
@@ -714,19 +755,6 @@ const contracts = {
                   internalType: "struct ICharityStreamV2.LatestProposition",
                   name: "",
                   type: "tuple",
-                },
-              ],
-              stateMutability: "view",
-              type: "function",
-            },
-            {
-              inputs: [],
-              name: "getNumberOfStreams",
-              outputs: [
-                {
-                  internalType: "uint256",
-                  name: "",
-                  type: "uint256",
                 },
               ],
               stateMutability: "view",
@@ -818,14 +846,8 @@ const contracts = {
               type: "function",
             },
             {
-              inputs: [
-                {
-                  internalType: "uint256",
-                  name: "_idStream",
-                  type: "uint256",
-                },
-              ],
-              name: "getStream",
+              inputs: [],
+              name: "getStreams",
               outputs: [
                 {
                   components: [
@@ -860,9 +882,9 @@ const contracts = {
                       type: "uint128",
                     },
                   ],
-                  internalType: "struct ICharityStreamV2.Stream",
+                  internalType: "struct ICharityStreamV2.Stream[]",
                   name: "",
-                  type: "tuple",
+                  type: "tuple[]",
                 },
               ],
               stateMutability: "view",
@@ -876,65 +898,6 @@ const contracts = {
                   internalType: "uint256",
                   name: "",
                   type: "uint256",
-                },
-              ],
-              stateMutability: "view",
-              type: "function",
-            },
-            {
-              inputs: [
-                {
-                  internalType: "uint256",
-                  name: "",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "",
-                  type: "uint256",
-                },
-              ],
-              name: "idToProposition",
-              outputs: [
-                {
-                  internalType: "enum ICharityStreamV2.Status",
-                  name: "status",
-                  type: "uint8",
-                },
-                {
-                  internalType: "uint32",
-                  name: "paymentDuration",
-                  type: "uint32",
-                },
-                {
-                  internalType: "uint32",
-                  name: "voteEndTime",
-                  type: "uint32",
-                },
-                {
-                  internalType: "uint32",
-                  name: "numberOfVoters",
-                  type: "uint32",
-                },
-                {
-                  internalType: "uint128",
-                  name: "amount",
-                  type: "uint128",
-                },
-                {
-                  internalType: "uint128",
-                  name: "ayes",
-                  type: "uint128",
-                },
-                {
-                  internalType: "uint128",
-                  name: "nays",
-                  type: "uint128",
-                },
-                {
-                  internalType: "string",
-                  name: "description",
-                  type: "string",
                 },
               ],
               stateMutability: "view",

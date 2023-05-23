@@ -1,12 +1,18 @@
 import { useState, useEffect } from "react";
 import { ethers, BigNumber } from "ethers";
-import { useScaffoldContractWrite, useScaffoldContractRead } from "~~/hooks/scaffold-eth";
+import { 
+  useScaffoldContractWrite, 
+  useScaffoldContractRead,
+  useScaffoldEventSubscriber
+} from "~~/hooks/scaffold-eth";
 import { 
   RocketLaunchIcon, 
   NoSymbolIcon, 
   TrophyIcon
 } from "@heroicons/react/24/outline";
 import { Input } from "./Inputs";
+import { toast } from "react-hot-toast";
+import { useAccount } from "wagmi";
 
 export const CreatorCampaign = () => {
   const [timeUnit, setTimeUnit] = useState("Seconds");
@@ -16,6 +22,7 @@ export const CreatorCampaign = () => {
   const [amount, setAmount] = useState("");
   const [duration, setDuration] = useState("");
   const [durationBN, setDurationBN] = useState<BigNumber>(BigNumber.from(0));
+  const { address: signer } = useAccount();
 
   const handleDuration = (duration: string) => {
     if (duration === "") {
@@ -39,6 +46,31 @@ export const CreatorCampaign = () => {
     return ethers.utils.parseEther(amount);
   }
 
+  const getCampaigns = () : string => {
+    if (Campaigns === undefined || Campaigns.length === 0) return "-";
+
+    let result = "";
+    for (let i = 0; i < Campaigns.length; i++) {
+      if (Campaigns[i].owner === signer) {
+        result += (i+1) + ", ";
+      }
+    }
+
+    if (result === "") return "-";
+    else return result.slice(0, -2);
+  }
+
+  const notify = (idCampaign: string) => 
+  toast("Campaign #" + idCampaign + " is live!", 
+  {
+    className: "md:w-[250px] w-[250px] lg:w-[250px] md:h-[80px] h-[80px] lg:h-[80px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 px-7 py-5",
+    icon: "🚀",
+    position: "bottom-right",
+    style: {
+      padding: "20px",
+    }
+  });
+
   const { writeAsync: createCampaign } = useScaffoldContractWrite({
     contractName: "CharityStreamV2",
     functionName: "createCampaign",
@@ -57,14 +89,29 @@ export const CreatorCampaign = () => {
     args: [BigNumber.from(idCampaignRefund)],
   });
 
-  const { data: fee} = useScaffoldContractRead({
+  const { data: Fee} = useScaffoldContractRead({
     contractName: "CharityStreamV2",
     functionName: "fee",
+  });
+
+  const { data: Campaigns} = useScaffoldContractRead({
+    contractName: "CharityStreamV2",
+    functionName: "getCampaigns",
   });
 
   useEffect(() => {
     handleDuration(duration);
   }, [duration, timeUnit]);
+
+  useScaffoldEventSubscriber({
+    contractName: "CharityStreamV2",
+    eventName: "campaignCreatedEvent",
+    listener: (creator, idCampaign, endTime, amount, name) => {
+      if (creator === signer) {
+        notify(idCampaign.toString());
+      }
+    },
+  });
 
   return (    
     <div className="flex items-center flex-col flex-grow">
@@ -140,7 +187,7 @@ export const CreatorCampaign = () => {
                 duration === ""
               }              
               onClick={async () => {
-                await createCampaign();
+                await createCampaign();    
               }}
               className={"btn btn-primary font-black w-1/3 flex items-center"}
             >
@@ -161,7 +208,7 @@ export const CreatorCampaign = () => {
             <div className="form-control mb-3">
               <label className="label">
                 <span className="label-text font-bold">
-                (and pay {fee ? fee.toNumber()/10 : "0"}% fee)
+                (and pay {Fee ? Fee.toNumber()/10 : "0"}% fee)
                 </span>
               </label>
               <div className="mt-2 form-control flex-row gap-3">
@@ -234,7 +281,19 @@ export const CreatorCampaign = () => {
         </div>
         </form>
       </div>
-        
+
+      <div className={"mx-auto mt-7"}>
+        <form className="md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
+        <div className="flex-column">
+          <span className="p-2 text-lg font-bold"> Your Campaigns: </span>
+          <span className="text-lg text-right min-w-[2rem]"> 
+          {getCampaigns()}
+          </span> 
+
+        </div>
+        </form>
+      </div>
+
     </div>
   );
 };
