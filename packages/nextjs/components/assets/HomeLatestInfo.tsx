@@ -1,13 +1,22 @@
 import { ethers, BigNumber } from "ethers";
 import { useEffect, useState } from "react";
-import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
+import { 
+  useScaffoldContractRead, 
+  useDeployedContractInfo 
+} from "~~/hooks/scaffold-eth";
 import { Address } from "~~/components/scaffold-eth";
 
-export const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => { 
-  const [idLatestCampaign, setIdLatestCampaign] = useState("0");
+export const HomeLatestInfo = () => {
+  const [idLatestCampaign, setIdLatestCampaign] = useState(0);
   const [idsLatestProposition, setIdsLatestProposition] = useState(["0","0"]);
 
-  const getEndTime = (time: number) : string => {
+  let contractAddress;
+  const { data: deployedContractData } = useDeployedContractInfo("CharityStreamV2");
+  if (deployedContractData) {
+    ({ address: contractAddress } = deployedContractData);
+  }
+
+  const getTime = (time: number) : string => {
     if (time === -1) {
       return "-";
     }
@@ -45,15 +54,40 @@ export const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
     return formattedTime;
   };
 
+  type CampaignTypeShort = {
+    endTime: number;
+    creator: string;
+    amountGoal: string;
+    amountReceived: string;
+    name: string;
+  };
+
+  const getCampaign = (id: number) : CampaignTypeShort => {
+    let Campaign : CampaignTypeShort = {
+      endTime: -1,
+      creator: ethers.constants.AddressZero,
+      amountGoal: "-",
+      amountReceived: "-",
+      name: "-",
+    };
+
+    if (Campaigns === undefined || id <= 0 || id > Campaigns.length) return Campaign;
+    Campaign.endTime = Campaigns[id - 1].endTime;
+    Campaign.creator = Campaigns[id - 1].creator;
+    Campaign.amountGoal = ethers.utils.formatEther(Campaigns[id - 1].amountGoal) + " Ξ";
+    Campaign.amountReceived = ethers.utils.formatEther(Campaigns[id - 1].amountReceived) + " Ξ";
+    Campaign.name = Campaigns[id - 1].name;
+    return Campaign;
+  }
+
   const { data: idCampaign} = useScaffoldContractRead({
     contractName: "CharityStreamV2",
     functionName: "idCampaign",
   });
 
-  const { data: campaignData} = useScaffoldContractRead({
+  const { data: Campaigns} = useScaffoldContractRead({
     contractName: "CharityStreamV2",
-    functionName: "getCampaign",
-    args: [BigNumber.from(idLatestCampaign)],
+    functionName: "getCampaigns",
   });
 
   const { data: idLatestProposition} = useScaffoldContractRead({
@@ -61,7 +95,7 @@ export const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
     functionName: "getLatestProposition",
   });
 
-  const { data: propositionData} = useScaffoldContractRead({
+  const { data: Proposition} = useScaffoldContractRead({
     contractName: "CharityStreamV2",
     functionName: "getProposition",
     args: [
@@ -87,7 +121,7 @@ export const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
 
   useEffect(() => {
     if (idCampaign === undefined) return;
-    setIdLatestCampaign(idCampaign.sub(BigNumber.from(1)).toString());         
+    setIdLatestCampaign(idCampaign.sub(1).toNumber());         
   }, [idCampaign]);
 
   useEffect(() => {
@@ -101,7 +135,7 @@ export const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
   return (    
       <div className="flex items-center flex-col flex-grow">
 
-        <div className={"mx-auto mt-10"}>
+        <div className={"mx-auto mt-7"}>
         <form className="md:w-[350px] w-[350px] lg:w-[350px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
           <span className="text-3xl text-black">Latest Campaign</span>
@@ -109,41 +143,41 @@ export const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> ID: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {idLatestCampaign === "0" ? "-" : idLatestCampaign}
+          {idLatestCampaign === 0 ? "-" : idLatestCampaign}
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Name: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {campaignData?.name || "-"} 
+          {getCampaign(idLatestCampaign).name} 
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Creator: </span>
-          <Address address={campaignData?.owner} />
+          <Address address={getCampaign(idLatestCampaign).creator} />
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Ends: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {getEndTime(campaignData?.endTime || -1)}
+          {getTime(getCampaign(idLatestCampaign).endTime)}
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Goal amount: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {campaignData?.amountGoal ? ethers.utils.formatEther(campaignData?.amountGoal.toString()) + " Ξ" : "-"}
+            {getCampaign(idLatestCampaign).amountGoal}
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Received amount: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {campaignData?.amountReceived ? ethers.utils.formatEther(campaignData?.amountReceived.toString()) + " Ξ" : "-"}
+            {getCampaign(idLatestCampaign).amountReceived}
           </span>
         </div>
         </form>
         </div>
 
-        <div className={"mx-auto mt-10"}>
+        <div className={"mx-auto mt-7"}>
         <form className="md:w-[350px] w-[350px] lg:w-[350px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
           <span className="text-3xl text-black">Latest Proposition</span>
@@ -163,35 +197,35 @@ export const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Description: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {propositionData?.description || "-"} 
+          {Proposition?.description || "-"} 
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Voting Ends: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
           { 
-          getEndTime(propositionData?.voteEndTime || -1)
+          getTime(Proposition?.voteEndTime || -1)
           }
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Amount: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {propositionData?.amount ? ethers.utils.formatEther(propositionData?.amount.toString()) + " ETH" : "-"}
+            {Proposition?.amount ? ethers.utils.formatEther(Proposition?.amount.toString()) + " Ξ" : "-"}
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Payment Duration: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
           { 
-          getDuration(propositionData?.paymentDuration || -1)
+          getDuration(Proposition?.paymentDuration || -1)
           }
           </span>
         </div>
         </form>
         </div>
 
-        <div className={"mx-auto mt-10"}>
+        <div className={"mx-auto mt-7"}>
         <form className="md:w-[330px] w-[330px] lg:w-[330px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">      
           <span className="p-2 text-lg font-bold"> Fee: </span>
@@ -218,7 +252,7 @@ export const HomeLatestInfo = ({contractAddress}: {contractAddress: any}) => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Streamed amount: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {StreamedAmount ? ethers.utils.formatEther(StreamedAmount.toString()) : "0"} Ξ
+          {StreamedAmount?.gt(0) ? ethers.utils.formatEther(StreamedAmount.toString()) : "0"} Ξ
           </span>
 
         </div>

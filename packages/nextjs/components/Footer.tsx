@@ -39,15 +39,6 @@ export const Footer = () => {
                 className="underline underline-offset-2"
               >
                 devorsmth.eth 
-              </a>              
-              {" "} for Buidlguidl's {" "}
-              <a
-                href="https://hackathon.buidlguidl.com/"
-                target="_blank"
-                rel="noreferrer"
-                className="underline underline-offset-2"
-              >
-                Hackathon 
               </a>
               {" "} using {" "}
               <a

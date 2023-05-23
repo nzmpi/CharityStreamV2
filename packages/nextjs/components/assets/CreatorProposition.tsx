@@ -19,9 +19,9 @@ export const CreatorProposition = () => {
   const [idProposition, setIdProposition] = useState("0");
   const [description, setDescription] = useState("");
   const [paymentDuration, setPaymentDuration] = useState("");
-  const [paymentDurationBN, setPaymentDurationBN] = useState<BigNumber>(BigNumber.from(0));
+  const [paymentDurationNumber, setPaymentDurationNumber] = useState(0);
   const [voteDuration, setVoteDuration] = useState("");
-  const [voteDurationBN, setVoteDurationBN] = useState<BigNumber>(BigNumber.from(0));
+  const [voteDurationNumber, setVoteDurationNumber] = useState(0);
   const [amount, setAmount] = useState("");
   const { address: signer } = useAccount();
 
@@ -36,25 +36,25 @@ export const CreatorProposition = () => {
     if (duration === "") {
       return;
     }
-    let value = BigNumber.from(duration);
+    let value = parseInt(duration);
     if (durationOf === "Payment") {
       if (timeUnitPayment === "Minutes") {
-        value = value.mul(BigNumber.from(60));
+        value = value*60;
       } else if (timeUnitPayment === "Hours") {
-        value = value.mul(BigNumber.from(3600));
+        value = value*3600;
       } else if (timeUnitPayment === "Days") {
-        value = value.mul(BigNumber.from(86400));
+        value = value*86400;
       }
-      setPaymentDurationBN(value);
+      setPaymentDurationNumber(value);
     } else {
       if (timeUnitVote === "Minutes") {
-        value = value.mul(BigNumber.from(60));
+        value = value*60;
       } else if (timeUnitVote === "Hours") {
-        value = value.mul(BigNumber.from(3600));
+        value = value*3600;
       } else if (timeUnitVote === "Days") {
-        value = value.mul(BigNumber.from(86400));
+        value = value*86400;
       }
-      setVoteDurationBN(value);
+      setVoteDurationNumber(value);
     }    
   };
 
@@ -94,7 +94,7 @@ export const CreatorProposition = () => {
   const { writeAsync: newProposition } = useScaffoldContractWrite({
     contractName: "CharityStreamV2",
     functionName: "newProposition",
-    args: [BigNumber.from(idCampaign), description, getAmount(amount), paymentDurationBN.toNumber(), voteDurationBN.toNumber()],
+    args: [BigNumber.from(idCampaign), description, getAmount(amount), paymentDurationNumber, voteDurationNumber],
   });
 
   const { writeAsync: endProposition } = useScaffoldContractWrite({
@@ -173,7 +173,7 @@ export const CreatorProposition = () => {
   return (    
     <div className="flex items-center flex-col flex-grow">  
 
-        <div className={"mx-auto mt-10"}>
+        <div className={"mx-auto mt-7"}>
         <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
         <div className="flex-column">
           <span className="text-3xl text-black">Create Proposition</span>
@@ -287,7 +287,9 @@ export const CreatorProposition = () => {
                 description === "" ||
                 amount === "" ||
                 paymentDuration === "" ||
-                voteDuration === ""
+                parseInt(paymentDuration) === 0 ||
+                voteDuration === "" ||
+                parseInt(voteDuration) === 0
               }              
               onClick={async () => {
                 await newProposition();
@@ -302,7 +304,7 @@ export const CreatorProposition = () => {
         </form>
         </div>
 
-        <div className={"mx-auto mt-10"}>
+        <div className={"mx-auto mt-7"}>
         <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
         <div className="flex-column">
           <span className="text-3xl text-black">End Proposition</span>

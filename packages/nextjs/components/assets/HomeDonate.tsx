@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { BigNumber, ethers } from "ethers";
-import { GiftIcon, WalletIcon, InboxArrowDownIcon } from "@heroicons/react/24/outline";
-import { useScaffoldContractWrite, useScaffoldContractRead } from "~~/hooks/scaffold-eth";
+import { 
+  GiftIcon, 
+  WalletIcon, 
+  InboxArrowDownIcon 
+} from "@heroicons/react/24/outline";
+import { 
+  useScaffoldContractWrite, 
+  useScaffoldContractRead 
+} from "~~/hooks/scaffold-eth";
 import { useAccount } from "wagmi";
 import { Input } from "./Inputs";
 
@@ -13,8 +20,8 @@ export const HomeDonate = () => {
   const [decision, setDecision] = useState("");
   const { address: signer } = useAccount();
 
-  const getAmount = (amount: string) : string => {
-    if (amount === "") {
+  const getAmount = () : string => {
+    if (amount === "" || ethers.utils.parseEther(amount).eq(0)) {
       return "0";
     }
     return amount;
@@ -27,6 +34,11 @@ export const HomeDonate = () => {
       return true;
     }
   };
+
+  const getRefunds = () : string => {
+    if (Refunds === undefined || Refunds.eq(0)) return "0";
+    return ethers.utils.formatEther(Refunds);
+  }
 
   const getCampaigns = (campaigns: readonly BigNumber[]) : string => {
     if (campaigns.length === 0) {
@@ -44,7 +56,7 @@ export const HomeDonate = () => {
     contractName: "CharityStreamV2",
     functionName: "donate",
     args: [BigNumber.from(idCampaign)],
-    value: getAmount(amount),
+    value: getAmount(),
   });
 
   const { writeAsync: vote } = useScaffoldContractWrite({
@@ -90,7 +102,7 @@ export const HomeDonate = () => {
   return (     
     <div className="flex items-center flex-col flex-grow">  
 
-        <div className={"mx-auto mt-10"}>
+        <div className={"mx-auto mt-7"}>
         <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
         <div className="flex-column">
           <span className="text-3xl text-black">Donate </span>
@@ -135,7 +147,7 @@ export const HomeDonate = () => {
           <button
               type="button"
               disabled={
-                amount === "" ||
+                getAmount() === "0" ||
                 idCampaign === "0"
               }              
               onClick={async () => {
@@ -151,7 +163,7 @@ export const HomeDonate = () => {
         </form>
         </div>  
 
-        <div className={"mx-auto mt-10"}>
+        <div className={"mx-auto mt-7"}>
         <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
         <div className="flex-column">
           <span className="text-3xl text-black">QVote </span>
@@ -224,7 +236,7 @@ export const HomeDonate = () => {
         </form>
         </div>  
 
-        <div className={"mx-auto mt-10"}>
+        <div className={"mx-auto mt-7"}>
         <form className="md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">  
           <span className="p-2 text-lg font-bold"> Supported campaigns: </span>
@@ -235,7 +247,7 @@ export const HomeDonate = () => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Available refund: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {Refunds ? ethers.utils.formatEther(Refunds?.toString()) : "0.0"} Ξ
+          {getRefunds()} Ξ
           </span>    
 
           <div className="mt-3 flex flex-col items-center py-2">

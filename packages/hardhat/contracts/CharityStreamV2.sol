@@ -38,7 +38,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
     }
 
     modifier onlyCampaignOwner(uint256 _idCampaign) {
-        if (msg.sender != campaigns[_idCampaign-1].owner) revert NotOwner();
+        if (msg.sender != campaigns[_idCampaign-1].creator) revert NotOwner();
         _;
     }
 
@@ -96,7 +96,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
 
     function stopAndRefundCampaign(uint256 _idCampaign) external {
         Campaign storage campaign = campaigns[_idCampaign-1];
-        if (msg.sender != campaign.owner && msg.sender != owner) revert NotOwner();
+        if (msg.sender != campaign.creator && msg.sender != owner) revert NotOwner();
         if (Status.Active != campaign.status) revert CampaignIsNotActive();
         campaign.status = Status.Refunded;
 
@@ -308,10 +308,6 @@ contract CharityStreamV2 is ICharityStreamV2 {
         return refunds[_addr];
     }
 
-    function getCampaign(uint256 _idCampaign) external view returns (Campaign memory) {
-        return campaigns[_idCampaign-1];
-    }
-
     function getCampaigns() external view returns (Campaign[] memory) {
         return campaigns;
     }
@@ -342,7 +338,5 @@ contract CharityStreamV2 is ICharityStreamV2 {
             y = z;
             z = (x/z + z)>>1;
         }
-    }    
-
-    receive() external payable {}
+    }
 }

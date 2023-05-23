@@ -39,7 +39,7 @@ export const CreatorCampaign = () => {
     setDurationBN(value);
   };
 
-  const getAmount = (amount: string) : BigNumber => {
+  const getAmount = () : BigNumber => {
     if (amount === "") {
       return BigNumber.from(0);
     }
@@ -51,7 +51,7 @@ export const CreatorCampaign = () => {
 
     let result = "";
     for (let i = 0; i < Campaigns.length; i++) {
-      if (Campaigns[i].owner === signer) {
+      if (Campaigns[i].creator === signer) {
         result += (i+1) + ", ";
       }
     }
@@ -74,7 +74,7 @@ export const CreatorCampaign = () => {
   const { writeAsync: createCampaign } = useScaffoldContractWrite({
     contractName: "CharityStreamV2",
     functionName: "createCampaign",
-    args: [campaignName, getAmount(amount), durationBN],
+    args: [campaignName, getAmount(), durationBN],
   });
 
   const { writeAsync: finishCampaign } = useScaffoldContractWrite({
@@ -116,7 +116,7 @@ export const CreatorCampaign = () => {
   return (    
     <div className="flex items-center flex-col flex-grow">
 
-      <div className={"mx-auto mt-10"}>
+      <div className={"mx-auto mt-7"}>
         <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
         <div className="flex-column">
           <span className="text-3xl text-black">Create Campaign</span>
@@ -183,8 +183,9 @@ export const CreatorCampaign = () => {
               type="button"
               disabled={
                 campaignName === "" ||
-                amount === "" ||
-                duration === ""
+                getAmount().eq(0) ||
+                duration === "" ||
+                parseInt(duration) === 0
               }              
               onClick={async () => {
                 await createCampaign();    
@@ -199,7 +200,7 @@ export const CreatorCampaign = () => {
         </form>
       </div> 
 
-      <div className={"mx-auto mt-10"}>
+      <div className={"mx-auto mt-7"}>
         <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
         
         <div className="flex-column">

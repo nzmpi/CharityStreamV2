@@ -2,10 +2,9 @@ import { ethers, BigNumber } from "ethers";
 import { useEffect, useState } from "react";
 import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
 import { Address } from "~~/components/scaffold-eth";
-import { Stream } from "stream";
 
 export const HomeGetInfo = () => { 
-  const [idCampaign, setIdCampaign] = useState("0"); 
+  const [idCampaign, setIdCampaign] = useState(0); 
   const [idCampaignProposition, setIdCampaignProposition] = useState("0");
   const [idProposition, setIdProposition] = useState("0");
   const [idStream, setIdStream] = useState(0); 
@@ -50,6 +49,49 @@ export const HomeGetInfo = () => {
     return formattedTime;
   };
 
+  type CampaignType = {
+    status: number;
+    endTime: number;
+    quorum: string;
+    creator: string;
+    amountGoal: string;
+    amountReceived: string;
+    amountLeft: string;
+    idProposition: string;
+    name: string;
+  };
+
+  const getCampaign = (id: number) : CampaignType => {
+    let Campaign : CampaignType = {
+      status: 0,
+      endTime: -1,
+      quorum: "-",
+      creator: ethers.constants.AddressZero,
+      amountGoal: "-",
+      amountReceived: "-",
+      amountLeft: "-",
+      idProposition: "-",
+      name: "-",
+    };
+
+    if (Campaigns === undefined || id <= 0 || id > Campaigns.length) return Campaign;
+    Campaign.status = Campaigns[id - 1].status;
+    Campaign.endTime = Campaigns[id - 1].endTime;
+    Campaign.quorum = Campaigns[id - 1].quorum.toString();
+    Campaign.creator = Campaigns[id - 1].creator;
+    Campaign.amountGoal = ethers.utils.formatEther(Campaigns[id - 1].amountGoal) + " Ξ";
+    Campaign.amountReceived = ethers.utils.formatEther(Campaigns[id - 1].amountReceived) + " Ξ";
+    Campaign.amountLeft = ethers.utils.formatEther(Campaigns[id - 1].amountLeft) + " Ξ";
+    Campaign.idProposition = Campaigns[id - 1].idProposition.sub(1).toString();
+    Campaign.name = Campaigns[id - 1].name;
+    return Campaign;
+  }
+
+  const getProposition = () : string => {
+    if (Proposition === undefined) return "-";
+    return Proposition.numberOfVoters.toString();
+  }
+
   type StreamType = {
     startTime: number;
     endTime: number;
@@ -80,10 +122,9 @@ export const HomeGetInfo = () => {
     return Stream;
   }
 
-  const { data: Campaign } = useScaffoldContractRead({
+  const { data: Campaigns } = useScaffoldContractRead({
     contractName: "CharityStreamV2",
-    functionName: "getCampaign",
-    args: [BigNumber.from(idCampaign)],
+    functionName: "getCampaigns",
   });
 
   const { data: Proposition } = useScaffoldContractRead({
@@ -98,14 +139,14 @@ export const HomeGetInfo = () => {
   });
 
   useEffect(() => { 
-    if (Campaign?.status === undefined || Campaign?.status === 0) {
+    if (getCampaign(idCampaign).status === 0) {
       setCampaignStatus("Doesn't exist");
     } else {
-      if (Campaign?.status === 1) {
+      if (getCampaign(idCampaign).status === 1) {
         setCampaignStatus("Active");
-      } else if (Campaign?.status === 2) {
+      } else if (getCampaign(idCampaign).status === 2) {
         setCampaignStatus("Finished");
-      } else if (Campaign?.status === 3) {
+      } else if (getCampaign(idCampaign).status === 3) {
         setCampaignStatus("Refunded");
       } else setCampaignStatus("Wrong data"); 
     }
@@ -126,7 +167,7 @@ export const HomeGetInfo = () => {
   return (    
       <div className="flex items-center flex-col flex-grow">
 
-        <div className={"mx-auto mt-10"}>
+        <div className={"mx-auto mt-7"}>
         <form className="md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
           <span className="text-3xl text-black">Get Campaign</span>
@@ -136,9 +177,9 @@ export const HomeGetInfo = () => {
                 type = "number"
                 onChange={e => {
                   if (e.target.value === "") {
-                    setIdCampaign("0");
+                    setIdCampaign(0);
                   } else   
-                    setIdCampaign(e.target.value);
+                    setIdCampaign(parseInt(e.target.value));
                 }}
                 placeholder="ID"
                 className="input input-bordered input-accent bg-transparent"
@@ -147,7 +188,7 @@ export const HomeGetInfo = () => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Name: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {Campaign?.name || "-"}
+          {getCampaign(idCampaign).name}
           </span>
 
           <div className="p-2 py-1"> </div>
@@ -158,48 +199,48 @@ export const HomeGetInfo = () => {
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Creator: </span>
-          <Address address={Campaign?.owner || ethers.constants.AddressZero} />
+          <Address address={getCampaign(idCampaign).creator} />
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Ends: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {getTime(Campaign?.endTime || -1)}
+          {getTime(getCampaign(idCampaign).endTime)}
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Goal amount: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {Campaign?.amountGoal ? ethers.utils.formatEther(Campaign?.amountGoal.toString()) + " Ξ" : "-"}
+            {getCampaign(idCampaign).amountGoal}
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Received amount: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {Campaign?.amountReceived ? ethers.utils.formatEther(Campaign?.amountReceived.toString()) + " Ξ" : "-"}
+            {getCampaign(idCampaign).amountReceived}
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Left amount: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {Campaign?.amountLeft ? ethers.utils.formatEther(Campaign?.amountLeft.toString()) + " Ξ" : "-"}
+            {getCampaign(idCampaign).amountLeft}
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Quorum: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {(Campaign?.quorum)?.toString() || "-"}
+          {getCampaign(idCampaign).quorum}
           </span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Propositions created: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {(Campaign?.idProposition.sub(BigNumber.from(1)))?.toString() || "-"}
+          {getCampaign(idCampaign).idProposition}
           </span>
         </div>
         </form>
         </div>
 
-        <div className={"mx-auto mt-10"}>
+        <div className={"mx-auto mt-7"}>
         <form className="md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
           <span className="text-3xl text-black">Get Proposition</span>
@@ -245,7 +286,7 @@ export const HomeGetInfo = () => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Number of Voters: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {Proposition?.numberOfVoters || "-"}
+          {getProposition()}
           </span>
 
           <div className="p-2 py-1"> </div>
@@ -281,7 +322,7 @@ export const HomeGetInfo = () => {
         </form>
         </div>
 
-        <div className={"mx-auto mt-10"}>
+        <div className={"mx-auto mt-7"}>
         <form className="md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
           <span className="text-3xl text-black">Get Stream</span>

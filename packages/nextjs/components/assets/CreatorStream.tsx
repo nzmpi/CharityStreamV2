@@ -42,7 +42,7 @@ export const CreatorStream = () => {
   type StreamType = {
     startTime: number;
     endTime: number;
-    lastWithdrawTime: number;
+    availableAmount: string;
     receiver: string;
     flow: string;
     leftAmount: string;
@@ -52,7 +52,7 @@ export const CreatorStream = () => {
     let Stream : StreamType = {
       startTime: -1,
       endTime: -1,
-      lastWithdrawTime: -1,
+      availableAmount: "-",
       receiver: ethers.constants.AddressZero,
       flow: "-",
       leftAmount: "-",
@@ -61,12 +61,35 @@ export const CreatorStream = () => {
     if (Streams === undefined || id <= 0 || id > Streams.length) return Stream;
     Stream.startTime = Streams[id - 1].startTime;
     Stream.endTime = Streams[id - 1].endTime;
-    Stream.lastWithdrawTime = Streams[id - 1].lastWithdrawTime;
+    Stream.availableAmount = getAvailableAmount(
+      Streams[id - 1].lastWithdrawTime,
+      Streams[id - 1].endTime,
+      Streams[id - 1].flow
+    );
     Stream.receiver = Streams[id - 1].receiver;
     Stream.flow = ethers.utils.formatEther(Streams[id - 1].flow.mul(3600)) + " Ξ/h";
     Stream.leftAmount = ethers.utils.formatEther(Streams[id - 1].leftAmount) + " Ξ";
     
     return Stream;
+  }
+
+  const getAvailableAmount = (
+    lastWithdrawTime: number,
+    endTime: number,
+    flow: BigNumber
+    ) : string => {
+    let delta = 0;
+    let amount;
+    const timeNow = Math.floor(Date.now()/1000);
+    if (timeNow < endTime) {
+      delta = timeNow - lastWithdrawTime;
+      amount = flow.mul(delta);
+      return ethers.utils.formatEther(amount) + " Ξ";
+    } else {
+      delta = endTime - lastWithdrawTime;
+      amount = flow.mul(delta);
+      return ethers.utils.formatEther(amount) + " Ξ";
+    }
   }
 
   const { data: Streams } = useScaffoldContractRead({
@@ -83,7 +106,7 @@ export const CreatorStream = () => {
   return (    
     <div className="flex items-center flex-col flex-grow">
 
-      <div className={"mx-auto mt-10"}>
+      <div className={"mx-auto mt-7"}>
         <form className="md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
           <span className="text-3xl text-black">Get Stream</span>
@@ -126,7 +149,13 @@ export const CreatorStream = () => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Left amount: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {getStream(idStream).leftAmount}
+          {getStream(idStream).leftAmount !== "0.0 Ξ" ? getStream(idStream).leftAmount : "0 Ξ"}
+          </span>
+
+          <div className="p-2 py-1"> </div>
+          <span className="p-2 text-lg font-bold"> Available: </span>
+          <span className="text-lg text-right min-w-[2rem]"> 
+          {getStream(idStream).availableAmount !== "0.0 Ξ" ? getStream(idStream).availableAmount : "0 Ξ"}
           </span>
 
           <div className="mt-2 form-control flex-row gap-8">

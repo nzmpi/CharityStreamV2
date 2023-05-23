@@ -33,7 +33,6 @@ interface ICharityStreamV2 is IErrors, IEvents {
   function transferOwnership(address _newOwner) external payable;
   function acceptOwnership() external payable;
   function getRefunds(address _addr) external view returns (uint256);
-  function getCampaign(uint256 _idCampaign) external view returns (Campaign memory);
   function getCampaigns() external view returns (Campaign[] memory);
   function getBackedCampaigns(address _backer) external view returns (uint256[] memory);
   function getProposition(
@@ -48,7 +47,7 @@ interface ICharityStreamV2 is IErrors, IEvents {
     Status status;
     uint32 endTime; 
     uint64 quorum;
-    address owner;
+    address creator;
     uint128 amountGoal;
     uint128 amountReceived;
     uint128 amountLeft;

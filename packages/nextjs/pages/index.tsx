@@ -4,19 +4,12 @@ import { useState } from "react";
 import { HomeLatestInfo } from "~~/components/assets/HomeLatestInfo";
 import { HomeDonate } from "~~/components/assets/HomeDonate";
 import { HomeGetInfo } from "~~/components/assets/HomeGetInfo";
-import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
   const [activeItem, setActiveItem] = useState("Latest Info");
 
   function handleActiveItem(itemId: string) {
     setActiveItem(itemId);
-  }
-
-  let contractAddress;
-  const { data: deployedContractData } = useDeployedContractInfo("CharityStreamV2");
-  if (deployedContractData) {
-    ({ address: contractAddress } = deployedContractData);
   }
 
   return (
@@ -43,9 +36,7 @@ const Home: NextPage = () => {
       </ul>
 
       {activeItem === "Latest Info" && (
-        <HomeLatestInfo
-        contractAddress={contractAddress}
-        />
+        <HomeLatestInfo/>
       )}
 
       {activeItem === "Get Info" && (
@@ -60,6 +51,5 @@ const Home: NextPage = () => {
     </>
   );
 };
-
 
 export default Home;
