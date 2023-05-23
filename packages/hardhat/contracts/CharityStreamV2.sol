@@ -4,7 +4,7 @@ pragma solidity 0.8.19;
 import {ICharityStreamV2} from "./interfaces/ICharityStreamV2.sol";
 
 /**
- * @title CharityStreamV2 is a contract that allows to create charity campaigns.
+ * @title CharityStreamV2 is a contract that allows to create campaigns.
  * @author devorsmth.eth
  */
 contract CharityStreamV2 is ICharityStreamV2 {
@@ -12,6 +12,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
     uint256 public fee;
     address public owner;
     address private pendingOwner;
+    // collected fee
     uint256 feeAmount;
     // starts from 1
     uint256 public idCampaign = 1;
@@ -30,11 +31,11 @@ contract CharityStreamV2 is ICharityStreamV2 {
     mapping (address => uint256[]) backedCampaigns;
     // idCampaign => propositions
     mapping (uint256 => Proposition[]) idToProposition;
-    // backer => idCampaign => idProposition => bool 
+    // backer => idCampaign => idProposition => vote
     mapping (address => mapping(uint256 => mapping(uint256 => bool))) hasVoted;
 
     constructor() payable {
-        owner = 0xc8ED1BFD9c71dC422BEA203BD8d869b55Bf252dd;
+        owner = msg.sender;
     }
 
     modifier onlyCampaignOwner(uint256 _idCampaign) {
@@ -47,6 +48,12 @@ contract CharityStreamV2 is ICharityStreamV2 {
         _;
     }
 
+    /**
+     * Create Campaign
+     * @param _name Name of the campaign
+     * @param _amount Goal amount
+     * @param _duration Duration of you campaign in seconds
+     */
     function createCampaign(
         string memory _name, 
         uint128 _amount, 
@@ -56,17 +63,17 @@ contract CharityStreamV2 is ICharityStreamV2 {
         if (0 == _amount) revert AmountIsZero();
 
         uint32 endTime = uint32(block.timestamp + _duration);
-        campaigns.push(Campaign(
-            Status.Active,
-            endTime,
-            0,
-            msg.sender,
-            _amount,
-            0,
-            0,
-            1,
-            _name
-        ));
+        campaigns.push(Campaign({
+            status: Status.Active,
+            endTime: endTime,
+            quorum: 0,
+            creator: msg.sender,
+            amountGoal: _amount,
+            amountReceived: 0,
+            amountLeft: 0,
+            idProposition: 1,
+            name: _name
+        }));
 
         emit campaignCreatedEvent(
             msg.sender, 
@@ -78,6 +85,9 @@ contract CharityStreamV2 is ICharityStreamV2 {
         ++idCampaign;           
     }
 
+    /**
+     * Donate to a campaign
+     */
     function donate(uint256 _idCampaign) external payable {
         Campaign storage campaign = campaigns[_idCampaign-1];
         if (campaign.status != Status.Active) revert CampaignIsNotActive();
@@ -94,6 +104,9 @@ contract CharityStreamV2 is ICharityStreamV2 {
         emit donationEvent(msg.sender, _idCampaign, msg.value); 
     }
 
+    /**
+     * Stop a campaign and add eth to backers' refunds
+     */
     function stopAndRefundCampaign(uint256 _idCampaign) external {
         Campaign storage campaign = campaigns[_idCampaign-1];
         if (msg.sender != campaign.creator && msg.sender != owner) revert NotOwner();
@@ -123,6 +136,9 @@ contract CharityStreamV2 is ICharityStreamV2 {
         emit refundEvent(msg.sender, refund);
     }
 
+    /**
+     * Finish a campaign and allow to create propositions
+     */
     function finishCampaign(uint256 _idCampaign) external onlyCampaignOwner(_idCampaign) {
         Campaign storage campaign = campaigns[_idCampaign-1];
         if (Status.Active != campaign.status) revert CampaignIsNotActive();
@@ -138,11 +154,20 @@ contract CharityStreamV2 is ICharityStreamV2 {
         }
         campaign.amountLeft = uint128(amount);
 
-        // 30% quorum + 1
+        // quorum is 30% of backers + 1
         campaign.quorum = uint64(idToBackers[_idCampaign].length*300/1000 + 1);
         emit finishCampaignEvent(_idCampaign, amount);
     }
 
+    /**
+     * Create a proposition for a campaign
+     * @notice Creating a proposition locks _amount of eth
+     * @param _idCampaign Campaign id
+     * @param _description Description of the proposition
+     * @param _amount Amount of eth required for the proposition
+     * @param _paymentDuration How long _amount will be paid in seconds
+     * @param _voteDuration Time to vote in seconds
+     */
     function newProposition(
         uint256 _idCampaign,
         string memory _description,
@@ -169,9 +194,12 @@ contract CharityStreamV2 is ICharityStreamV2 {
             nays: 0,
             description: _description
         }));
-        // already checked
+        // already checked for underflow
         unchecked {campaign.amountLeft = campaign.amountLeft - _amount;}
-        latestProposition = LatestProposition(uint128(_idCampaign),uint128(idProposition_));
+        latestProposition = LatestProposition(
+            uint128(_idCampaign),
+            uint128(idProposition_)
+        );
         ++campaign.idProposition;
 
         emit newPropositionEvent(
@@ -185,6 +213,11 @@ contract CharityStreamV2 is ICharityStreamV2 {
         );
     }
 
+    /**
+     * Vote yes or no for a proposition
+     * @notice only backers can vote,
+     * Vote power = sqrt(donation in wei)
+     */
     function vote(
         uint256 _idCampaign, 
         uint256 _idProposition, 
@@ -200,15 +233,18 @@ contract CharityStreamV2 is ICharityStreamV2 {
         ++proposition.numberOfVoters;
 
         uint128 votePower = uint128(sqrt(donation));
-        if (_decision) proposition.ayes += votePower;
-        else proposition.nays += votePower;
+        if (_decision) proposition.ayes = proposition.ayes + votePower;
+        else proposition.nays = proposition.nays + votePower;
 
         emit voteEvent(msg.sender, _idCampaign, _idProposition, _decision, votePower);
     }
 
     /**
-     * @dev If voting is successful (qurorum met) and 
-     * ayes are (50% + 1), create a stream
+     * End a proposition
+     * @notice Numbers of voters must be >= quorum,
+     * if ayes > nays, the proposition is approved
+     * and a stream is created.
+     * If quorum is not met or nays > ayes, the locked funds are unlocked
      */
     function endProposition(uint256 _idCampaign, uint256 _idProposition) external onlyCampaignOwner(_idCampaign) {
         Proposition storage proposition = idToProposition[_idCampaign][_idProposition-1];
@@ -218,18 +254,21 @@ contract CharityStreamV2 is ICharityStreamV2 {
 
         Campaign storage campaign = campaigns[_idCampaign-1];
         if (proposition.numberOfVoters < campaign.quorum) { 
-            campaign.amountLeft = campaign.amountLeft + proposition.amount;
+            unchecked{
+                campaign.amountLeft = campaign.amountLeft + proposition.amount;
+            }
             emit quorumIsNotMetEvent(msg.sender, _idCampaign, _idProposition);
         } else {
-            if (proposition.ayes > proposition.nays) { 
-                uint128 amount = proposition.amount;                               
+            if (proposition.ayes > proposition.nays) {                               
                 createStream(
-                    amount, 
+                    proposition.amount, 
                     proposition.paymentDuration
                 );
                 emit propositionIsApprovedEvent(msg.sender, _idCampaign, _idProposition);
             } else {
-                campaign.amountLeft = campaign.amountLeft + proposition.amount;
+                unchecked {
+                    campaign.amountLeft = campaign.amountLeft + proposition.amount;    
+                }                
                 emit propositionIsNotApprovedEvent(msg.sender, _idCampaign, _idProposition);
             }
         }
@@ -237,17 +276,20 @@ contract CharityStreamV2 is ICharityStreamV2 {
 
     function createStream(uint128 _amount, uint32 _paymentDuration) internal {
         uint128 flow = _amount/_paymentDuration;
-        streams.push(Stream(
-            uint32(block.timestamp),
-            uint32(block.timestamp) + _paymentDuration,
-            uint32(block.timestamp),
-            msg.sender,
-            flow,
-            _amount
-        ));
+        streams.push(Stream({
+            startTime: uint32(block.timestamp),
+            endTime: uint32(block.timestamp) + _paymentDuration,
+            lastWithdrawTime: uint32(block.timestamp),
+            receiver: msg.sender,
+            flow: flow,
+            leftAmount: _amount
+        }));
         emit createStreamEvent(msg.sender, streams.length, flow, _amount);
     }
 
+    /**
+     * Withdraw available funds from a stream
+     */
     function withdrawFunds(uint256 idStream) external {
         Stream storage stream = streams[idStream - 1];
         address receiver = stream.receiver;
@@ -264,6 +306,9 @@ contract CharityStreamV2 is ICharityStreamV2 {
         }
     }
 
+    /**
+     * Calculates the payment for a stream
+     */
     function getPayment(Stream storage _stream) internal returns (uint128){
         uint256 delta;
         uint32 endTime = _stream.endTime;
@@ -277,12 +322,19 @@ contract CharityStreamV2 is ICharityStreamV2 {
         return uint128(delta*_stream.flow);
     }
 
+    /**
+     * Set new fee
+     * @param _newFee New fee is in %, where 100%==1000
+     */
     function setFee(uint256 _newFee) external payable onlyOwner() {
         if (1000 < _newFee) revert FeeTooHigh();
         emit newFeeEvent(fee, _newFee);
         fee = _newFee;
     }
 
+    /**
+     * Withdraw collected fee
+     */
     function withdrawFee() external payable onlyOwner() {
         uint256 feeAmount_ = feeAmount;
         if (0 == feeAmount_) revert NoWithdraw();
@@ -292,11 +344,17 @@ contract CharityStreamV2 is ICharityStreamV2 {
         emit withdrawEvent(msg.sender, feeAmount_);
     }
 
+    /**
+     * The first step of a transfer
+     */
     function transferOwnership(address _newOwner) external payable onlyOwner() {
         pendingOwner = _newOwner;
         emit transferOwnershipEvent(msg.sender, _newOwner);
     }
 
+    /**
+     * The second step of a transfer
+     */
     function acceptOwnership() external payable {
         if (msg.sender != pendingOwner) revert NotOwner();
         owner = msg.sender;
@@ -304,6 +362,7 @@ contract CharityStreamV2 is ICharityStreamV2 {
         emit acceptOwnershipEvent(msg.sender);
     }
 
+    //// View functions ////
     function getRefunds(address _addr) external view returns (uint256) {
         return refunds[_addr];
     }
