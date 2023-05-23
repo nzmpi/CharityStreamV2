@@ -138,7 +138,7 @@ export const HomeLatestInfo = () => {
         <div className={"mx-auto mt-7"}>
         <form className="md:w-[350px] w-[350px] lg:w-[350px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
-          <span className="text-3xl text-black">Latest Campaign</span>
+          <span className="text-3xl">Latest Campaign</span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> ID: </span>
@@ -180,7 +180,7 @@ export const HomeLatestInfo = () => {
         <div className={"mx-auto mt-7"}>
         <form className="md:w-[350px] w-[350px] lg:w-[350px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
-          <span className="text-3xl text-black">Latest Proposition</span>
+          <span className="text-3xl">Latest Proposition</span>
 
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Campaign ID: </span>

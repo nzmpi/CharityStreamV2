@@ -119,7 +119,7 @@ export const CreatorCampaign = () => {
       <div className={"mx-auto mt-7"}>
         <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
         <div className="flex-column">
-          <span className="text-3xl text-black">Create Campaign</span>
+          <span className="text-3xl">Create Campaign</span>
 
             <div className="form-control mb-3">
               <label className="label">
@@ -130,7 +130,7 @@ export const CreatorCampaign = () => {
                 type = "text"
                 onChange={e => setCampaignName(e.target.value)}
                 placeholder="Name"
-                className="input input-bordered input-accent input-sm bg-transparent"
+                className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300"
               />
             </div>
 
@@ -162,13 +162,13 @@ export const CreatorCampaign = () => {
                 type="number"
                 onChange={e => setDuration(e.target.value)}
                 placeholder={timeUnit}
-                className="input input-bordered input-accent bg-transparent md:w-[210px] w-[210px] lg:w-[210px]"
+                className="input input-bordered input-accent bg-transparent md:w-[210px] w-[210px] lg:w-[210px] flex border-2 border-base-300"
               />
 
               <select
                 value={timeUnit}
                 onChange={e => setTimeUnit(e.target.value)}
-                className="select select-bordered select-accent input-sm md:w-[100px] w-[100px] lg:w-[100px]"
+                className="select select-bordered select-accent input-sm md:w-[100px] w-[100px] lg:w-[100px] flex border-2 border-base-300"
               >
               <option value="Seconds">Seconds</option>
               <option value="Minutes">Minutes</option>
@@ -204,7 +204,7 @@ export const CreatorCampaign = () => {
         <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
         
         <div className="flex-column">
-          <span className="text-3xl text-black">Finish Campaign</span>
+          <span className="text-3xl">Finish Campaign</span>
           
             <div className="form-control mb-3">
               <label className="label">
@@ -222,7 +222,7 @@ export const CreatorCampaign = () => {
                     setIdCampaignFinish(e.target.value);
                 }}
                 placeholder="Campaign ID"
-                className="input input-bordered input-accent bg-transparent md:w-[200px] w-[200px] lg:w-[200px]"
+                className="input input-bordered input-accent bg-transparent md:w-[200px] w-[200px] lg:w-[200px] flex border-2 border-base-300"
               />
 
             <button
@@ -243,7 +243,7 @@ export const CreatorCampaign = () => {
         </div>
 
         <div className="mt-5 flex-column">
-          <span className="text-3xl text-black">Stop Campaign</span>
+          <span className="text-3xl">Stop Campaign</span>
           
             <div className="form-control mb-3">
               <label className="label">
@@ -261,7 +261,7 @@ export const CreatorCampaign = () => {
                     setIdCampaignRefund(e.target.value);
                 }}
                 placeholder="Campaign ID"
-                className="input input-bordered input-accent bg-transparent md:w-[200px] w-[200px] lg:w-[200px]"
+                className="input input-bordered input-accent bg-transparent md:w-[200px] w-[200px] lg:w-[200px] flex border-2 border-base-300"
               />
 
             <button

@@ -176,7 +176,7 @@ export const CreatorProposition = () => {
         <div className={"mx-auto mt-7"}>
         <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
         <div className="flex-column">
-          <span className="text-3xl text-black">Create Proposition</span>
+          <span className="text-3xl">Create Proposition</span>
 
             <div className="form-control mb-3 mt-2">
               <label className="label">
@@ -192,7 +192,7 @@ export const CreatorProposition = () => {
                     setIdCampaign(e.target.value);
                 }}
                 placeholder="ID"
-                className="input input-bordered input-accent input-sm bg-transparent"
+                className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300"
               />
             </div>
 
@@ -205,7 +205,7 @@ export const CreatorProposition = () => {
                 type = "text"
                 onChange={e => setDescription(e.target.value)}
                 placeholder="Description"
-                className="input input-bordered input-accent input-sm bg-transparent"
+                className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300"
               />
             </div>
 
@@ -237,13 +237,13 @@ export const CreatorProposition = () => {
                 type="number"
                 onChange={e => setPaymentDuration(e.target.value)}
                 placeholder={timeUnitPayment}
-                className="input input-bordered input-accent bg-transparent md:w-[210px] w-[210px] lg:w-[210px]"
+                className="input input-bordered input-accent bg-transparent md:w-[210px] w-[210px] lg:w-[210px] flex border-2 border-base-300"
               />
 
               <select
                 value={timeUnitPayment}
                 onChange={e => setTimeUnitPayment(e.target.value)}
-                className="select select-bordered select-accent input-sm md:w-[100px] w-[100px] lg:w-[100px]"
+                className="select select-bordered select-accent input-sm md:w-[100px] w-[100px] lg:w-[100px] flex border-2 border-base-300"
               >
               <option value="Seconds">Seconds</option>
               <option value="Minutes">Minutes</option>
@@ -263,13 +263,13 @@ export const CreatorProposition = () => {
                 type="number"
                 onChange={e => setVoteDuration(e.target.value)}
                 placeholder={timeUnitVote}
-                className="input input-bordered input-accent bg-transparent md:w-[210px] w-[210px] lg:w-[210px]"
+                className="input input-bordered input-accent bg-transparent md:w-[210px] w-[210px] lg:w-[210px] flex border-2 border-base-300"
               />
 
               <select
                 value={timeUnitVote}
                 onChange={e => setTimeUnitVote(e.target.value)}
-                className="select select-bordered select-accent input-sm md:w-[100px] w-[100px] lg:w-[100px]"
+                className="select select-bordered select-accent input-sm md:w-[100px] w-[100px] lg:w-[100px] flex border-2 border-base-300"
               >
               <option value="Seconds">Seconds</option>
               <option value="Minutes">Minutes</option>
@@ -307,7 +307,7 @@ export const CreatorProposition = () => {
         <div className={"mx-auto mt-7"}>
         <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
         <div className="flex-column">
-          <span className="text-3xl text-black">End Proposition</span>
+          <span className="text-3xl">End Proposition</span>
           
           <div className="form-control mb-3 mt-2">
             <label className="label">
@@ -323,7 +323,7 @@ export const CreatorProposition = () => {
                   setIdCampaign(e.target.value);
               }}
               placeholder="ID"
-              className="input input-bordered input-accent input-sm bg-transparent"
+              className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300"
             />
           </div>
 
@@ -341,7 +341,7 @@ export const CreatorProposition = () => {
                   setIdProposition(e.target.value);
               }}
               placeholder="ID"
-              className="input input-bordered input-accent input-sm bg-transparent"
+              className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300"
             />
           </div>
 

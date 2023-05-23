@@ -996,7 +996,7 @@ const contracts = {
       chainId: "11155111",
       contracts: {
         CharityStreamV2: {
-          address: "0xf5F3C8CB83af69B76d85162D5EdC5705677F7647",
+          address: "0x4f083147879d43c3b12853dcb806892B88C29880",
           abi: [
             {
               inputs: [],

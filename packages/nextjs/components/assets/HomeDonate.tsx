@@ -42,7 +42,7 @@ export const HomeDonate = () => {
 
   const getCampaigns = (campaigns: readonly BigNumber[]) : string => {
     if (campaigns.length === 0) {
-      return "0";
+      return "-";
     }
     let camps = "";
     for (let i = 0; i < campaigns.length - 1; i++) {
@@ -105,7 +105,7 @@ export const HomeDonate = () => {
         <div className={"mx-auto mt-7"}>
         <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
         <div className="flex-column">
-          <span className="text-3xl text-black">Donate </span>
+          <span className="text-3xl">Donate </span>
           
             <div className="form-control mb-3 mt-2">
               <label className="label">
@@ -121,7 +121,7 @@ export const HomeDonate = () => {
                     setIdCampaign(e.target.value);
                 }}
                 placeholder="ID"
-                className="input input-bordered input-accent input-sm bg-transparent"
+                className="input input-bordered input-accent input-sm bg-transparent  flex border-2 border-base-300"
               />
             </div>
 
@@ -166,7 +166,7 @@ export const HomeDonate = () => {
         <div className={"mx-auto mt-7"}>
         <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
         <div className="flex-column">
-          <span className="text-3xl text-black">QVote </span>
+          <span className="text-3xl">QVote </span>
           
           <div className="form-control mb-3 mt-2">
             <label className="label">
@@ -182,7 +182,7 @@ export const HomeDonate = () => {
                   setIdCampaignProposition(e.target.value);
               }}
               placeholder="ID"
-              className="input input-bordered input-accent input-sm bg-transparent"
+              className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300"
             />
           </div>
 
@@ -200,7 +200,7 @@ export const HomeDonate = () => {
                   setIdProposition(e.target.value);
               }}
               placeholder="ID"
-              className="input input-bordered input-accent input-sm bg-transparent"
+              className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300"
             />
           </div>
 
@@ -209,9 +209,9 @@ export const HomeDonate = () => {
               <span className="label-text font-bold">Decision: </span>
             </label>
 
-            <input type="radio" name="voting" className="radio" value="Yes" />
+            <input type="radio" name="voting" className="radio flex border-2 border-base-300" value="Yes" />
             <label>Aye</label>
-            <input type="radio" name="voting" className="radio" value="No" />
+            <input type="radio" name="voting" className="radio flex border-2 border-base-300" value="No" />
             <label>Nay</label>
           </div>
 
@@ -241,7 +241,7 @@ export const HomeDonate = () => {
         <div className="flex-column">  
           <span className="p-2 text-lg font-bold"> Supported campaigns: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {Campaigns ? getCampaigns(Campaigns) : "0"}
+            {Campaigns ? getCampaigns(Campaigns) : "-"}
           </span>
           
           <div className="p-2 py-1"> </div>

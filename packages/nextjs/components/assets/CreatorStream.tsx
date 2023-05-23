@@ -109,7 +109,7 @@ export const CreatorStream = () => {
       <div className={"mx-auto mt-7"}>
         <form className="md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
-          <span className="text-3xl text-black">Get Stream</span>
+          <span className="text-3xl">Get Stream</span>
 
           <div className="p-2 py-2"> </div>
             <input
@@ -121,7 +121,7 @@ export const CreatorStream = () => {
                     setIdStream(parseInt(e.target.value));
                 }}
                 placeholder="Stream ID"
-                className="input input-bordered input-accent bg-transparent"
+                className="input input-bordered input-accent bg-transparent flex border-2 border-base-300"
             />
 
           <div className="p-2 py-1"> </div>
