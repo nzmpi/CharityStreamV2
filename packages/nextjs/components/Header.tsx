@@ -76,7 +76,7 @@ export const Header = () => {
         </div>
         <div className="hidden lg:flex items-center gap-2 ml-4 mr-6">
           <Link href="/" passHref className="flex relative w-10 h-10">
-            <Image alt="CS logo" className="cursor-pointer" fill src="/logo.svg" />
+            <Image alt="CS logo" className="cursor-pointer" fill src="/logo.png" />
           </Link>
           <div className="flex flex-col">
             <span className="font-bold leading-tight">CharityStream v2</span>
