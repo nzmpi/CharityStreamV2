@@ -27,6 +27,8 @@ In `Creator` tab you can create campaigns, propositions and withdraw your funds.
   1. Check your streams.
   2. Withdraw available funds.
 
+##
+
 In `Home` tab you can get some info about campaigns, propositions or streams and can:
 
   1. Donate to a campaign.
