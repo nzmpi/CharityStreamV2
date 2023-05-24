@@ -1,6 +1,6 @@
 # CharityStream v2
 
-This dApp allows users to create public campaigns and interact with received funds.
+This dApp allows users to create public campaigns and interact with received funds (deployed on Sepolia).
 
 Site: https://charitystreamv2.vercel.app
 
