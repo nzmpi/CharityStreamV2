@@ -27,7 +27,7 @@ In `Creator` tab you can create campaigns, propositions and withdraw your funds.
   1. Check your streams.
   2. Withdraw available funds.
 
-In `Home` tab you can get some info about a campaign, proposition or stream and can:
+In `Home` tab you can get some info about campaigns, propositions or streams and can:
 
   1. Donate to a campaign.
   2. Vote for a proposition (this dApp uses [the quadratic voting](https://en.wikipedia.org/wiki/Quadratic_voting)).
