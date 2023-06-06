@@ -4,6 +4,7 @@ import { useScaffoldContractWrite, useScaffoldContractRead } from "~~/hooks/scaf
 import { BanknotesIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
 import { useAccount } from "wagmi";
+import { get } from "http";
 
 export const CreatorStream = () => {
   const [idStream, setIdStream] = useState(0);
@@ -17,13 +18,19 @@ export const CreatorStream = () => {
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var year = a.getFullYear();
     var month = months[a.getMonth()];
-    var date = a.getDate();
-    var hour = a.getHours();
+    var date = a.getDate() < 10 ? '0' + a.getDate() : a.getDate();
+    var hour = a.getHours() < 10 ? '0' + a.getHours() : a.getHours();
     var min = a.getMinutes() < 10 ? '0' + a.getMinutes() : a.getMinutes();
     var sec = a.getSeconds() < 10 ? '0' + a.getSeconds() : a.getSeconds();
     var formattedTime = hour + ':' + min + ':' + sec + ' ' + date + ' ' + month + ' ' + year ;
     return formattedTime;
   };
+
+  const getEther = (x: BigNumber, d: number) : string => {
+    let stringX = ethers.utils.formatEther(x).slice(0, d);
+    let newX = ethers.utils.parseEther(stringX);
+    return ethers.utils.formatEther(newX);
+  }
 
   const getStreams = () : string => {
     if (Streams === undefined || Streams.length === 0) return "-";
@@ -68,7 +75,7 @@ export const CreatorStream = () => {
     );
     Stream.receiver = Streams[id - 1].receiver;
     Stream.flow = ethers.utils.formatEther(Streams[id - 1].flow.mul(3600)) + " Ξ/h";
-    Stream.leftAmount = ethers.utils.formatEther(Streams[id - 1].leftAmount) + " Ξ";
+    Stream.leftAmount = getEther(Streams[id - 1].leftAmount, 16) + " Ξ";
     
     return Stream;
   }
@@ -84,11 +91,11 @@ export const CreatorStream = () => {
     if (timeNow < endTime) {
       delta = timeNow - lastWithdrawTime;
       amount = flow.mul(delta);
-      return ethers.utils.formatEther(amount) + " Ξ";
+      return getEther(amount, 19) + " Ξ";
     } else {
       delta = endTime - lastWithdrawTime;
       amount = flow.mul(delta);
-      return ethers.utils.formatEther(amount) + " Ξ";
+      return getEther(amount, 19) + " Ξ";
     }
   }
 
@@ -107,7 +114,7 @@ export const CreatorStream = () => {
     <div className="flex items-center flex-col flex-grow">
 
       <div className={"mx-auto mt-7"}>
-        <form className="md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
+        <form className="w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
           <span className="text-3xl">Get Stream</span>
 
@@ -125,10 +132,12 @@ export const CreatorStream = () => {
             />
 
           <div className="p-2 py-1"> </div>
+          <div className="flex flex-row">
           <span className="p-2 text-lg font-bold"> Receiver: </span>
           <Address address={getStream(idStream).receiver} />
+          </div>
 
-          <div className="p-2 py-1"> </div>
+          <div className="p-2 py-0"> </div>
           <span className="p-2 text-lg font-bold"> Starts: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
           {getTime(getStream(idStream).startTime)}

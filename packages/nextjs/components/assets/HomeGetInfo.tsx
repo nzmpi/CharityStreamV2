@@ -19,13 +19,20 @@ export const HomeGetInfo = () => {
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var year = a.getFullYear();
     var month = months[a.getMonth()];
-    var date = a.getDate();
-    var hour = a.getHours();
+    var date = a.getDate() < 10 ? '0' + a.getDate() : a.getDate();
+    var hour = a.getHours() < 10 ? '0' + a.getHours() : a.getHours();
     var min = a.getMinutes() < 10 ? '0' + a.getMinutes() : a.getMinutes();
     var sec = a.getSeconds() < 10 ? '0' + a.getSeconds() : a.getSeconds();
     var formattedTime = hour + ':' + min + ':' + sec + ' ' + date + ' ' + month + ' ' + year ;
     return formattedTime;
   };
+
+  const isPlular = (x: number) : string => {
+    if (x === 1)
+      return "";
+    else 
+      return "s";
+  }
 
   const getDuration = (time: number) : string => {
     if (time === -1) {
@@ -40,14 +47,20 @@ export const HomeGetInfo = () => {
     var mins = Math.floor(time/60);
     var secs = time%60;
     var formattedTime = "";
-    if (months !== 0) formattedTime += months + ' months ';
-    if (days !== 0) formattedTime += days + ' days ';
-    if (hours !== 0) formattedTime += hours + ' hours ';
-    if (mins !== 0) formattedTime += mins + ' minutes ';
-    if (secs !== 0) formattedTime += secs + ' seconds';
+    if (months !== 0) formattedTime += months + " month" + isPlular(months) + " ";
+    if (days !== 0) formattedTime += days + " day" + isPlular(days) + " ";
+    if (hours !== 0) formattedTime += hours + " hour" + isPlular(hours) + " ";
+    if (mins !== 0) formattedTime += mins + " minute" + isPlular(mins) + " ";
+    if (secs !== 0) formattedTime += secs + " second" + isPlular(secs);
   
     return formattedTime;
   };
+
+  const getEther = (x: BigNumber, d: number) : string => {
+    let stringX = ethers.utils.formatEther(x).slice(0, d);
+    let newX = ethers.utils.parseEther(stringX);
+    return ethers.utils.formatEther(newX);
+  }
 
   type CampaignType = {
     status: number;
@@ -79,9 +92,9 @@ export const HomeGetInfo = () => {
     Campaign.endTime = Campaigns[id - 1].endTime;
     Campaign.quorum = Campaigns[id - 1].quorum.toString();
     Campaign.creator = Campaigns[id - 1].creator;
-    Campaign.amountGoal = ethers.utils.formatEther(Campaigns[id - 1].amountGoal) + " Ξ";
-    Campaign.amountReceived = ethers.utils.formatEther(Campaigns[id - 1].amountReceived) + " Ξ";
-    Campaign.amountLeft = ethers.utils.formatEther(Campaigns[id - 1].amountLeft) + " Ξ";
+    Campaign.amountGoal = getEther(Campaigns[id - 1].amountGoal, 16) + " Ξ";
+    Campaign.amountReceived = getEther(Campaigns[id - 1].amountReceived, 12) + " Ξ";
+    Campaign.amountLeft = getEther(Campaigns[id - 1].amountLeft, 16) + " Ξ";
     Campaign.idProposition = Campaigns[id - 1].idProposition.sub(1).toString();
     Campaign.name = Campaigns[id - 1].name;
     return Campaign;
@@ -117,7 +130,7 @@ export const HomeGetInfo = () => {
     Stream.lastWithdrawTime = Streams[id - 1].lastWithdrawTime;
     Stream.receiver = Streams[id - 1].receiver;
     Stream.flow = ethers.utils.formatEther(Streams[id - 1].flow.mul(3600)) + " Ξ/h";
-    Stream.leftAmount = ethers.utils.formatEther(Streams[id - 1].leftAmount) + " Ξ";
+    Stream.leftAmount = getEther(Streams[id - 1].leftAmount, 16) + " Ξ";
     
     return Stream;
   }
@@ -168,7 +181,7 @@ export const HomeGetInfo = () => {
       <div className="flex items-center flex-col flex-grow">
 
         <div className={"mx-auto mt-7"}>
-        <form className="md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
+        <form className="w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
           <span className="text-3xl">Get Campaign</span>
 
@@ -197,11 +210,13 @@ export const HomeGetInfo = () => {
           {campaignStatus}
           </span>
 
-          <div className="p-2 py-1"> </div>
+          <div className="p-2 py-0"> </div>
+          <div className="flex flex-row">
           <span className="p-2 text-lg font-bold"> Creator: </span>
           <Address address={getCampaign(idCampaign).creator} />
+          </div>
 
-          <div className="p-2 py-1"> </div>
+          <div className="p-2 py-0"> </div>
           <span className="p-2 text-lg font-bold"> Ends: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
           {getTime(getCampaign(idCampaign).endTime)}
@@ -241,7 +256,7 @@ export const HomeGetInfo = () => {
         </div>
 
         <div className={"mx-auto mt-7"}>
-        <form className="md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
+        <form className="w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
           <span className="text-3xl">Get Proposition</span>
 
@@ -298,7 +313,7 @@ export const HomeGetInfo = () => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Amount: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {Proposition?.amount ? ethers.utils.formatEther(Proposition?.amount.toString()) + " Ξ" : "-"}
+          {Proposition?.amount ? ethers.utils.formatEther(Proposition?.amount) + " Ξ" : "-"}
           </span>
 
           <div className="p-2 py-1"> </div>
@@ -323,7 +338,7 @@ export const HomeGetInfo = () => {
         </div>
 
         <div className={"mx-auto mt-7"}>
-        <form className="md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
+        <form className="w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
           <span className="text-3xl">Get Stream</span>
 
@@ -341,10 +356,12 @@ export const HomeGetInfo = () => {
             />
 
           <div className="p-2 py-1"> </div>
+          <div className="flex flex-row">
           <span className="p-2 text-lg font-bold"> Receiver: </span>
           <Address address={getStream(idStream).receiver} />
+          </div>
 
-          <div className="p-2 py-1"> </div>
+          <div className="p-2 py-0"> </div>
           <span className="p-2 text-lg font-bold"> Starts: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
           {getTime(getStream(idStream).startTime)}

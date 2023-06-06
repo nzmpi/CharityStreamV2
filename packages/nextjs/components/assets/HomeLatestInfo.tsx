@@ -24,13 +24,20 @@ export const HomeLatestInfo = () => {
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var year = a.getFullYear();
     var month = months[a.getMonth()];
-    var date = a.getDate();
-    var hour = a.getHours();
+    var date = a.getDate() < 10 ? '0' + a.getDate() : a.getDate();
+    var hour = a.getHours() < 10 ? '0' + a.getHours() : a.getHours();
     var min = a.getMinutes() < 10 ? '0' + a.getMinutes() : a.getMinutes();
     var sec = a.getSeconds() < 10 ? '0' + a.getSeconds() : a.getSeconds();
-  
-    return hour + ':' + min + ':' + sec + ' ' + date + ' ' + month + ' ' + year;
+    var formattedTime = hour + ':' + min + ':' + sec + ' ' + date + ' ' + month + ' ' + year ;
+    return formattedTime;
   };
+
+  const isPlular = (x: number) : string => {
+    if (x === 1)
+      return "";
+    else 
+      return "s";
+  }
 
   const getDuration = (time: number) : string => {
     if (time === -1) {
@@ -45,14 +52,20 @@ export const HomeLatestInfo = () => {
     var mins = Math.floor(time/60);
     var secs = time%60;
     var formattedTime = "";
-    if (months !== 0) formattedTime += months + ' months ';
-    if (days !== 0) formattedTime += days + ' days ';
-    if (hours !== 0) formattedTime += hours + ' hours ';
-    if (mins !== 0) formattedTime += mins + ' minutes ';
-    if (secs !== 0) formattedTime += secs + ' seconds';
+    if (months !== 0) formattedTime += months + " month" + isPlular(months) + " ";
+    if (days !== 0) formattedTime += days + " day" + isPlular(days) + " ";
+    if (hours !== 0) formattedTime += hours + " hour" + isPlular(hours) + " ";
+    if (mins !== 0) formattedTime += mins + " minute" + isPlular(mins) + " ";
+    if (secs !== 0) formattedTime += secs + " second" + isPlular(secs);
   
     return formattedTime;
   };
+
+  const getEther = (x: BigNumber, d: number) : string => {
+    let stringX = ethers.utils.formatEther(x).slice(0, d);
+    let newX = ethers.utils.parseEther(stringX);
+    return ethers.utils.formatEther(newX);
+  }
 
   type CampaignTypeShort = {
     endTime: number;
@@ -74,8 +87,8 @@ export const HomeLatestInfo = () => {
     if (Campaigns === undefined || id <= 0 || id > Campaigns.length) return Campaign;
     Campaign.endTime = Campaigns[id - 1].endTime;
     Campaign.creator = Campaigns[id - 1].creator;
-    Campaign.amountGoal = ethers.utils.formatEther(Campaigns[id - 1].amountGoal) + " Ξ";
-    Campaign.amountReceived = ethers.utils.formatEther(Campaigns[id - 1].amountReceived) + " Ξ";
+    Campaign.amountGoal = getEther(Campaigns[id - 1].amountGoal, 14) + " Ξ";
+    Campaign.amountReceived = getEther(Campaigns[id - 1].amountReceived, 10) + " Ξ";
     Campaign.name = Campaigns[id - 1].name;
     return Campaign;
   }
@@ -136,7 +149,7 @@ export const HomeLatestInfo = () => {
       <div className="flex items-center flex-col flex-grow">
 
         <div className={"mx-auto mt-7"}>
-        <form className="md:w-[350px] w-[350px] lg:w-[350px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
+        <form className="w-[350px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
           <span className="text-3xl">Latest Campaign</span>
 
@@ -152,11 +165,13 @@ export const HomeLatestInfo = () => {
           {getCampaign(idLatestCampaign).name} 
           </span>
 
-          <div className="p-2 py-1"> </div>
+          <div className="p-2 py-0"> </div>
+          <div className="flex flex-row">
           <span className="p-2 text-lg font-bold"> Creator: </span>
           <Address address={getCampaign(idLatestCampaign).creator} />
+          </div>
 
-          <div className="p-2 py-1"> </div>
+          <div className="p-2 py-0"> </div>
           <span className="p-2 text-lg font-bold"> Ends: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
           {getTime(getCampaign(idLatestCampaign).endTime)}
@@ -178,7 +193,7 @@ export const HomeLatestInfo = () => {
         </div>
 
         <div className={"mx-auto mt-7"}>
-        <form className="md:w-[350px] w-[350px] lg:w-[350px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
+        <form className="w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">
           <span className="text-3xl">Latest Proposition</span>
 
@@ -211,7 +226,7 @@ export const HomeLatestInfo = () => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Amount: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-            {Proposition?.amount ? ethers.utils.formatEther(Proposition?.amount.toString()) + " Ξ" : "-"}
+            {Proposition?.amount ? ethers.utils.formatEther(Proposition?.amount) + " Ξ" : "-"}
           </span>
 
           <div className="p-2 py-1"> </div>
@@ -226,18 +241,20 @@ export const HomeLatestInfo = () => {
         </div>
 
         <div className={"mx-auto mt-7"}>
-        <form className="md:w-[330px] w-[330px] lg:w-[330px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
+        <form className="w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-4 py-4">
         <div className="flex-column">      
           <span className="p-2 text-lg font-bold"> Fee: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
             {Fee ? Fee.toNumber()/10 : "0"} %
           </span>
 
-          <div className="p-2 py-1"> </div>
+          <div className="p-2 py-0"> </div>
+          <div className="flex flex-row">
           <span className="p-2 text-lg font-bold"> Contract Address:</span>
           <Address address={contractAddress} /> 
+          </div>
 
-          <div className="p-2 py-1"> </div>
+          <div className="p-2 py-0"> </div>
           <span className="p-2 text-lg font-bold"> Campaigns created: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
           {idLatestCampaign}
@@ -252,7 +269,7 @@ export const HomeLatestInfo = () => {
           <div className="p-2 py-1"> </div>
           <span className="p-2 text-lg font-bold"> Streamed amount: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
-          {StreamedAmount?.gt(0) ? ethers.utils.formatEther(StreamedAmount.toString()) : "0"} Ξ
+          {StreamedAmount?.gt(0) ? getEther(StreamedAmount, 14) : "0"} Ξ
           </span>
 
         </div>

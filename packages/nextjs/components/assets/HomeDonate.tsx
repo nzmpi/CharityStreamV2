@@ -37,7 +37,9 @@ export const HomeDonate = () => {
 
   const getRefunds = () : string => {
     if (Refunds === undefined || Refunds.eq(0)) return "0";
-    return ethers.utils.formatEther(Refunds);
+    let x = ethers.utils.formatEther(Refunds).slice(0, 13);
+    let y = ethers.utils.parseEther(x);
+    return ethers.utils.formatEther(y);
   }
 
   const getCampaigns = (campaigns: readonly BigNumber[]) : string => {
@@ -103,7 +105,7 @@ export const HomeDonate = () => {
     <div className="flex items-center flex-col flex-grow">  
 
         <div className={"mx-auto mt-7"}>
-        <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
+        <form className={"w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
         <div className="flex-column">
           <span className="text-3xl">Donate </span>
           
@@ -164,7 +166,7 @@ export const HomeDonate = () => {
         </div>  
 
         <div className={"mx-auto mt-7"}>
-        <form className={"md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
+        <form className={"w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5"}>
         <div className="flex-column">
           <span className="text-3xl">QVote </span>
           
@@ -237,7 +239,7 @@ export const HomeDonate = () => {
         </div>  
 
         <div className={"mx-auto mt-7"}>
-        <form className="md:w-[370px] w-[370px] lg:w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
+        <form className="w-[370px] bg-base-100 rounded-3xl shadow-xl border-primary border-2 p-2 px-7 py-5">
         <div className="flex-column">  
           <span className="p-2 text-lg font-bold"> Supported campaigns: </span>
           <span className="text-lg text-right min-w-[2rem]"> 
