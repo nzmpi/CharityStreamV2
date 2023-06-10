@@ -128,7 +128,7 @@ export const CreatorStream = () => {
                     setIdStream(parseInt(e.target.value));
                 }}
                 placeholder="Stream ID"
-                className="input input-bordered input-accent bg-transparent flex border-2 border-base-300"
+                className="input input-bordered input-accent bg-transparent flex border-2 border-base-300 focus:outline-none px-4 placeholder-primary placeholder:text-accent/90"
             />
 
           <div className="p-2 py-1"> </div>

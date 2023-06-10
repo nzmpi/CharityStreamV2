@@ -192,7 +192,7 @@ export const CreatorProposition = () => {
                     setIdCampaign(e.target.value);
                 }}
                 placeholder="ID"
-                className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300"
+                className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300 focus:outline-none placeholder-primary placeholder:text-accent/90 px-4"
               />
             </div>
 
@@ -201,12 +201,13 @@ export const CreatorProposition = () => {
                 <span className="label-text font-bold">Describe your Proposition</span>
               </label>
 
-              <input
-                type = "text"
+              <textarea
+                value={description}
                 onChange={e => setDescription(e.target.value)}
                 placeholder="Description"
-                className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300"
-              />
+                rows={2}
+                className="input-md border-2 border-base-300 rounded-3xl px-4 py-1.5 focus:outline-none placeholder-primary placeholder:text-accent/90"
+          />
             </div>
 
             <div className="form-control mb-3">
@@ -237,13 +238,13 @@ export const CreatorProposition = () => {
                 type="number"
                 onChange={e => setPaymentDuration(e.target.value)}
                 placeholder={timeUnitPayment}
-                className="input input-bordered input-accent bg-transparent md:w-[210px] w-[210px] lg:w-[210px] flex border-2 border-base-300"
+                className="input input-bordered input-accent bg-transparent md:w-[210px] w-[210px] lg:w-[210px] flex border-2 border-base-300 focus:outline-none placeholder-primary placeholder:text-accent/90"
               />
 
               <select
                 value={timeUnitPayment}
                 onChange={e => setTimeUnitPayment(e.target.value)}
-                className="select select-bordered select-accent input-sm md:w-[100px] w-[100px] lg:w-[100px] flex border-2 border-base-300"
+                className="select select-bordered select-accent input-sm md:w-[100px] w-[100px] lg:w-[100px] flex border-2 border-base-300 focus:outline-none"
               >
               <option value="Seconds">Seconds</option>
               <option value="Minutes">Minutes</option>
@@ -263,13 +264,13 @@ export const CreatorProposition = () => {
                 type="number"
                 onChange={e => setVoteDuration(e.target.value)}
                 placeholder={timeUnitVote}
-                className="input input-bordered input-accent bg-transparent md:w-[210px] w-[210px] lg:w-[210px] flex border-2 border-base-300"
+                className="input input-bordered input-accent bg-transparent md:w-[210px] w-[210px] lg:w-[210px] flex border-2 border-base-300 focus:outline-none placeholder-primary placeholder:text-accent/90"
               />
 
               <select
                 value={timeUnitVote}
                 onChange={e => setTimeUnitVote(e.target.value)}
-                className="select select-bordered select-accent input-sm md:w-[100px] w-[100px] lg:w-[100px] flex border-2 border-base-300"
+                className="select select-bordered select-accent input-sm md:w-[100px] w-[100px] lg:w-[100px] flex border-2 border-base-300 focus:outline-none"
               >
               <option value="Seconds">Seconds</option>
               <option value="Minutes">Minutes</option>
@@ -323,7 +324,7 @@ export const CreatorProposition = () => {
                   setIdCampaign(e.target.value);
               }}
               placeholder="ID"
-              className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300"
+              className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300 focus:outline-none px-4 placeholder-primary placeholder:text-accent/90"
             />
           </div>
 
@@ -341,7 +342,7 @@ export const CreatorProposition = () => {
                   setIdProposition(e.target.value);
               }}
               placeholder="ID"
-              className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300"
+              className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300 focus:outline-none px-4 placeholder-primary placeholder:text-accent/90"
             />
           </div>
 

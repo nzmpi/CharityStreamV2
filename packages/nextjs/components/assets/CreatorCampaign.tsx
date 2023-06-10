@@ -130,7 +130,7 @@ export const CreatorCampaign = () => {
                 type = "text"
                 onChange={e => setCampaignName(e.target.value)}
                 placeholder="Name"
-                className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300"
+                className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300 focus:outline-none px-4 placeholder-primary placeholder:text-accent/90"
               />
             </div>
 
@@ -162,13 +162,13 @@ export const CreatorCampaign = () => {
                 type="number"
                 onChange={e => setDuration(e.target.value)}
                 placeholder={timeUnit}
-                className="input input-bordered input-accent bg-transparent md:w-[210px] w-[210px] lg:w-[210px] flex border-2 border-base-300"
+                className="input input-bordered input-accent bg-transparent md:w-[210px] w-[210px] lg:w-[210px] flex border-2 border-base-300 focus:outline-none px-4 placeholder-primary placeholder:text-accent/90"
               />
 
               <select
                 value={timeUnit}
                 onChange={e => setTimeUnit(e.target.value)}
-                className="select select-bordered select-accent input-sm md:w-[100px] w-[100px] lg:w-[100px] flex border-2 border-base-300"
+                className="select select-bordered select-accent input-sm md:w-[100px] w-[100px] lg:w-[100px] flex border-2 border-base-300 focus:outline-none"
               >
               <option value="Seconds">Seconds</option>
               <option value="Minutes">Minutes</option>
@@ -222,7 +222,7 @@ export const CreatorCampaign = () => {
                     setIdCampaignFinish(e.target.value);
                 }}
                 placeholder="Campaign ID"
-                className="input input-bordered input-accent bg-transparent md:w-[200px] w-[200px] lg:w-[200px] flex border-2 border-base-300"
+                className="input input-bordered input-accent bg-transparent md:w-[200px] w-[200px] lg:w-[200px] flex border-2 border-base-300 focus:outline-none px-4 placeholder-primary placeholder:text-accent/90"
               />
 
             <button
@@ -261,7 +261,7 @@ export const CreatorCampaign = () => {
                     setIdCampaignRefund(e.target.value);
                 }}
                 placeholder="Campaign ID"
-                className="input input-bordered input-accent bg-transparent md:w-[200px] w-[200px] lg:w-[200px] flex border-2 border-base-300"
+                className="input input-bordered input-accent bg-transparent md:w-[200px] w-[200px] lg:w-[200px] flex border-2 border-base-300 focus:outline-none px-4 placeholder-primary placeholder:text-accent/90"
               />
 
             <button

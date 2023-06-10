@@ -195,7 +195,7 @@ export const HomeGetInfo = () => {
                     setIdCampaign(parseInt(e.target.value));
                 }}
                 placeholder="ID"
-                className="input input-bordered input-accent bg-transparent flex border-2 border-base-300"
+                className="input input-bordered input-accent bg-transparent flex border-2 border-base-300 focus:outline-none px-4 placeholder-primary placeholder:text-accent/90"
             />
 
           <div className="p-2 py-1"> </div>
@@ -270,7 +270,7 @@ export const HomeGetInfo = () => {
                     setIdCampaignProposition(e.target.value);
                 }}
                 placeholder="Campaign ID"
-                className="input input-bordered input-accent bg-transparent flex border-2 border-base-300"
+                className="input input-bordered input-accent bg-transparent flex border-2 border-base-300 focus:outline-none px-4 placeholder-primary placeholder:text-accent/90"
             />
           
           <div className="p-2 py-2"> </div>
@@ -283,7 +283,7 @@ export const HomeGetInfo = () => {
                     setIdProposition(e.target.value);
                 }}
                 placeholder="Proposition ID"
-                className="input input-bordered input-accent bg-transparent flex border-2 border-base-300"
+                className="input input-bordered input-accent bg-transparent flex border-2 border-base-300 focus:outline-none px-4 placeholder-primary placeholder:text-accent/90"
             />
 
           <div className="p-2 py-1"> </div>

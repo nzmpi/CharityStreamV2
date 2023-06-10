@@ -123,7 +123,7 @@ export const HomeDonate = () => {
                     setIdCampaign(e.target.value);
                 }}
                 placeholder="ID"
-                className="input input-bordered input-accent input-sm bg-transparent  flex border-2 border-base-300"
+                className="input input-bordered input-accent input-sm bg-transparent  flex border-2 border-base-300 focus:outline-none px-4 placeholder-primary placeholder:text-accent/90"
               />
             </div>
 
@@ -184,7 +184,7 @@ export const HomeDonate = () => {
                   setIdCampaignProposition(e.target.value);
               }}
               placeholder="ID"
-              className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300"
+              className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300 focus:outline-none px-4 placeholder-primary placeholder:text-accent/90"
             />
           </div>
 
@@ -202,7 +202,7 @@ export const HomeDonate = () => {
                   setIdProposition(e.target.value);
               }}
               placeholder="ID"
-              className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300"
+              className="input input-bordered input-accent input-sm bg-transparent flex border-2 border-base-300 focus:outline-none px-4 placeholder-primary placeholder:text-accent/90"
             />
           </div>
 
