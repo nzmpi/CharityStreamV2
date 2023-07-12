@@ -37,7 +37,7 @@ In `Home` tab you can get some info about campaigns, propositions or streams and
 
 ## Acknowledgment 
 
-Built with [Scaffold-Eth 2](https://github.com/scaffold-eth/scaffold-eth-2).
+Frontend built with [Scaffold-Eth 2](https://github.com/scaffold-eth/scaffold-eth-2).
 
 
 
